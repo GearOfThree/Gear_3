@@ -86,6 +86,11 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMS_Player::Look);
+	
+		// Sprint
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMS_Player::Sprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMS_Player::StopSprint);
+		
 	}
 	else
 	{
@@ -151,4 +156,27 @@ void AMS_Player::DoJumpEnd()
 {
 	// signal the character to stop jumping
 	StopJumping();
+}
+
+// 
+void AMS_Player::Sprint(const FInputActionValue& Value)
+{
+	bool bIsPressed = Value.Get<bool>();
+	
+	if (bIsPressed && GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+		
+	}
+}
+
+// 원래 속도로 돌아옴
+void AMS_Player::StopSprint()
+{
+	
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	}	
+		
 }
