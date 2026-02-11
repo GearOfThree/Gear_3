@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
+#include "SawGunActor.h"
 
 // Sets default values
 AEnemyNPCCharacter::AEnemyNPCCharacter()
@@ -74,6 +75,21 @@ void AEnemyNPCCharacter::BeginPlay()
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(IMC_EnemyNPCLook, 0);
+		}
+	}
+	
+	if (SawGunClass)
+	{
+		// 1. 무기 액터 스폰
+		EquippedWeapon = GetWorld()->SpawnActor<ASawGunActor>(SawGunClass);
+
+		if (EquippedWeapon)
+		{
+			// 2. 무기를 사이언의 메시 소켓에 부착
+			// "Weapon_Socket"은 스켈레톤 에디터에서 직접 만든 소켓 이름이어야 함.
+			EquippedWeapon->AttachToComponent(SionMesh, 
+				FAttachmentTransformRules::SnapToTargetIncludingScale, 
+				FName("weapon_socket"));
 		}
 	}
 }

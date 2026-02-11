@@ -94,4 +94,13 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
+protected:
+	// 스폰할 무기 클래스 (블루프린트에서 선택 가능하게)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	TSubclassOf<class ASawGunActor> SawGunClass;
+
+	// 생성된 무기 인스턴스를 저장할 변수
+	UPROPERTY()
+	ASawGunActor* EquippedWeapon;
 };
