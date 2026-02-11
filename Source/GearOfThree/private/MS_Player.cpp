@@ -12,6 +12,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
+#include "public/MS_PlayerController.h"
+#include "Tools/UEdMode.h"
 
 AMS_Player::AMS_Player()
 {
@@ -49,6 +51,24 @@ AMS_Player::AMS_Player()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void AMS_Player::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (AMS_PlayerController* player = Cast<AMS_PlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem 
+			= ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(player->GetLocalPlayer()))
+		{
+			if(DefaultMappingContext)
+			{
+				Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			}
+		}
+		
+	}
 }
 
 void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

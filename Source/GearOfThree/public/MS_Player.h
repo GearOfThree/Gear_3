@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "InputMappingContext.h"
 #include "MS_Player.generated.h"
 
 class USpringArmComponent;
@@ -29,6 +30,12 @@ class AMS_Player : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	class UInputMappingContext* DefaultMappingContext;
+	
+	/** Gameplay initialization */
+	virtual void BeginPlay() override;
 protected:
 
 	/** Jump Input Action */
