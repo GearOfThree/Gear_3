@@ -1,9 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EnemyNPC/Public/EnemyNPCPlayerController.h"
-
-#include "GearOfThreePlayerController.h"
+#include "EnemyNPCPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"

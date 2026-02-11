@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EnemyNPC/Public/BuzzsawActor.h"
+#include "BuzzsawActor.h"
 
 // Sets default values
 ABuzzsawActor::ABuzzsawActor()
