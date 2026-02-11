@@ -12,11 +12,12 @@
 #include "InputActionValue.h"
 #include "GearOfThree.h"
 #include "SawGunActor.h"
+#include "WeaponComponent.h"
 
 // Sets default values
 AEnemyNPCCharacter::AEnemyNPCCharacter()
 {
-	// 1. 새로운 Skeletal Mesh 컴포넌트 생성 및 부착
+	// 새로운 Skeletal Mesh 컴포넌트 생성 및 부착
 	// 이름은 구분하기 쉽게 'SionMesh' 등으로 설정합니다.
 	SionMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SionMesh"));
 	SionMesh->SetupAttachment(GetMesh()); // 부모 Mesh 밑에 부착
@@ -54,8 +55,8 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	// 1. 컴포넌트 생성 (CreateDefaultSubobject)
+	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 }
 
 void AEnemyNPCCharacter::BeginPlay()
@@ -78,19 +79,10 @@ void AEnemyNPCCharacter::BeginPlay()
 		}
 	}
 	
-	if (SawGunClass)
+	if (WeaponComponent && StartingWeaponClass)
 	{
-		// 1. 무기 액터 스폰
-		EquippedWeapon = GetWorld()->SpawnActor<ASawGunActor>(SawGunClass);
-
-		if (EquippedWeapon)
-		{
-			// 2. 무기를 사이언의 메시 소켓에 부착
-			// "Weapon_Socket"은 스켈레톤 에디터에서 직접 만든 소켓 이름이어야 함.
-			EquippedWeapon->AttachToComponent(SionMesh, 
-				FAttachmentTransformRules::SnapToTargetIncludingScale, 
-				FName("weapon_socket"));
-		}
+		// "Weapon_Socket"은 스켈레톤에서 만든 소켓 이름과 정확히 일치해야 합니다.
+		WeaponComponent->EquipWeapon(StartingWeaponClass, FName("weapon_socket"));
 	}
 }
 
@@ -105,6 +97,9 @@ void AEnemyNPCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AEnemyNPCCharacter::Look);
+		
+		// Fire
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AEnemyNPCCharacter::FireSawBlade);
 	}
 	else
 	{
@@ -157,5 +152,14 @@ void AEnemyNPCCharacter::DoLook(float Yaw, float Pitch)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(Yaw);
 		AddControllerPitchInput(Pitch);
+	}
+}
+
+void AEnemyNPCCharacter::FireSawBlade(const FInputActionValue& Value)
+{
+	if (WeaponComponent)
+	{
+		// WeaponComponent -> SawGun -> Projectile Spawn 순으로 실행됨
+		WeaponComponent->Fire();
 	}
 }

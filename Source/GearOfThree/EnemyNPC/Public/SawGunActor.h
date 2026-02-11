@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "SawGunActor.generated.h"
 
+class ABuzzKillProjectile;
+
 UCLASS()
 class GEAROFTHREE_API ASawGunActor : public AActor
 {
@@ -19,10 +21,14 @@ protected:
 public:	
 	// Sets default values for this actor's properties
 	ASawGunActor();
-	// 나중에 사이언이 호출할 사격 함수
+	
+	// 사격 함수
 	void Fire();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// [중요] 블루프린트에서 할당할 톱날 투사체 클래스
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TSubclassOf<ABuzzKillProjectile> ProjectileClass;
 };

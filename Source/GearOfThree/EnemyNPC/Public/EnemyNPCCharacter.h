@@ -8,11 +8,15 @@
 #include "Logging/LogMacros.h"
 #include "EnemyNPCCharacter.generated.h"
 
+// 전방 선언 (헤더 파일 의존성 줄이기)
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
+class UWeaponComponent;
+class ASawGunActor;
+
 
 /**
  *  A simple player-controllable third person character
@@ -34,6 +38,14 @@ class GEAROFTHREE_API AEnemyNPCCharacter : public ACharacter
 	
 protected:
 	virtual void BeginPlay() override;
+	
+	// 무기 관리 컴포넌트 선언
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UWeaponComponent* WeaponComponent;
+
+	// 에디터에서 할당할 무기 블루프린트 클래스 (BP_SawGun)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	TSubclassOf<ASawGunActor> StartingWeaponClass;
 	
 	// 블루프린트에서도 편집할 수 있도록 VisibleAnywhere를 줍니다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
@@ -58,7 +70,12 @@ protected:
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MouseLookAction;
+	
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* FireAction;
 
+	// [함수] 발사 키를 눌렀을 때 호출됨
+	void FireSawBlade(const FInputActionValue& Value);
 public:
 
 	/** Constructor */
@@ -94,13 +111,4 @@ public:
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	
-protected:
-	// 스폰할 무기 클래스 (블루프린트에서 선택 가능하게)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	TSubclassOf<class ASawGunActor> SawGunClass;
-
-	// 생성된 무기 인스턴스를 저장할 변수
-	UPROPERTY()
-	ASawGunActor* EquippedWeapon;
 };
