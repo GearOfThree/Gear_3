@@ -15,8 +15,14 @@
 // Sets default values
 AEnemyNPCCharacter::AEnemyNPCCharacter()
 {
+	// 1. 새로운 Skeletal Mesh 컴포넌트 생성 및 부착
+	// 이름은 구분하기 쉽게 'SionMesh' 등으로 설정합니다.
+	SionMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SionMesh"));
+	SionMesh->SetupAttachment(GetMesh()); // 부모 Mesh 밑에 부착
+	
+	GetMesh()->SetWorldLocationAndRotation(FVector(0,0,-90),FRotator(0,-90,0));
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 75.0f);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -50,6 +56,28 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
+
+void AEnemyNPCCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(IMC_EnemyNPC, 0);
+		}
+	}
+	
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(IMC_EnemyNPCLook, 0);
+		}
+	}
+}
+
 void AEnemyNPCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings

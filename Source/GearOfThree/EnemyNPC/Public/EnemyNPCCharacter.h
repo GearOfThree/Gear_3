@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputMappingContext.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "EnemyNPCCharacter.generated.h"
@@ -10,6 +11,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UInputMappingContext;
 struct FInputActionValue;
 
 /**
@@ -28,9 +30,23 @@ class GEAROFTHREE_API AEnemyNPCCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
 	
 protected:
+	virtual void BeginPlay() override;
+	
+	// 블루프린트에서도 편집할 수 있도록 VisibleAnywhere를 줍니다.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
+	class USkeletalMeshComponent* SionMesh;
 
+	// Input Mapping Context
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputMappingContext* IMC_EnemyNPC;
+	
+	// Input Mapping Context
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputMappingContext* IMC_EnemyNPCLook;
+	
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* MoveAction;
