@@ -16,6 +16,7 @@ class GEAROFTHREE_API UMS_PlayerAnim : public UAnimInstance
 	
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerAnim)
-	float Speed; // default 값을 지정을 해줘야지 움직일 수 있다. 
+	float speed; // default 값을 지정을 해줘야지 움직일 수 있다. 
 	
+	// 
 };
