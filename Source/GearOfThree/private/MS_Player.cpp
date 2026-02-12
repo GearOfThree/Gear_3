@@ -91,6 +91,9 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMS_Player::Sprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMS_Player::StopSprint);
 		
+		// Crouch
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMS_Player::StartCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AMS_Player::StopCrouch);
 	}
 	else
 	{
@@ -173,10 +176,21 @@ void AMS_Player::Sprint(const FInputActionValue& Value)
 // 원래 속도로 돌아옴
 void AMS_Player::StopSprint()
 {
-	
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->MaxWalkSpeed = 600.f;
 	}	
-		
 }
+
+
+
+void AMS_Player::StartCrouch(const FInputActionValue& Value)
+{
+	Crouch(); 
+}
+
+void AMS_Player::StopCrouch()
+{
+	UnCrouch(); 
+}
+

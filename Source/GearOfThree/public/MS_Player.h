@@ -31,9 +31,6 @@ class AMS_Player : public ACharacter
 	UCameraComponent* FollowCamera;
 	
 protected:
-	// 최대 속력 값 (default 값 지정)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
-	float SprintSpeed = 800.f;
 	
 	// InputContext 지정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
@@ -63,6 +60,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* SprintAction;
 	
+	// Crouch
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* CrouchAction;
+	
+protected:
+	// 최대 속력 값 (default 값 지정)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float SprintSpeed = 800.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	bool IsCrouched = false;
+	
 public:
 
 	/** Constructor */
@@ -87,6 +96,12 @@ protected:
 	// 빠르게 달리는것을 멈춤
 	void StopSprint();
 
+	// 몸 구부리기
+	void StartCrouch(const FInputActionValue& Value);
+	
+	// 몸 일어서기
+	void StopCrouch();
+	
 public:
 
 	/** Handles move inputs from either controls or UI interfaces */
