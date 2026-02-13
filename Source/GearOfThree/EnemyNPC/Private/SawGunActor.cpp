@@ -20,21 +20,23 @@ void ASawGunActor::BeginPlay()
 	Super::BeginPlay();
 	
 }
+
 void ASawGunActor::Fire()
 {
-	// 투사체 클래스와 무기 메시가 있는지 확인
-	if (WeaponMesh && ProjectileClass)
-	{
-		// 총구 소켓 위치 가져오기 ("Muzzle"이라는 이름의 소켓이 스켈레톤에 있어야 함)
-		FVector MuzzleLocation = WeaponMesh->GetSocketLocation(FName("muzzle"));
-		FRotator MuzzleRotation = WeaponMesh->GetSocketRotation(FName("muzzle"));
+	// 1. 데이터 유효성 검사
+	if (!WeaponMesh || !ProjectileClass) return;
 
-		// 3. 스폰 파라미터 설정
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = GetOwner(); // 총의 주인 (사이언)
-		SpawnParams.Instigator = GetInstigator();
+	// 2. 총구(Muzzle) 위치 가져오기
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
+	
+	// 캐릭터가 바라보는 방향(Forward)을 그대로 회전값(Rotation)으로 변환합니다.
+	FRotator SpawnRotation = GetOwner()->GetActorForwardVector().Rotation();
 
-		// 발사 (스폰)
-		GetWorld()->SpawnActor<ABuzzKillProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-	}
+	// 4. 스폰 파라미터 설정
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = GetOwner();
+	SpawnParams.Instigator = GetInstigator();
+
+	// 5. 발사 (스폰)
+	GetWorld()->SpawnActor<ABuzzKillProjectile>(ProjectileClass, MuzzleLocation, SpawnRotation, SpawnParams);
 }

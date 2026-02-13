@@ -18,23 +18,29 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Components")
 	UStaticMeshComponent* SawMesh;
 	
 	// 발사 속도 (Impulse 강도)
 	UPROPERTY(EditAnywhere, Category="Physics")
-	float LaunchPower = 3000.0f;
+	float LaunchPower = 4000.0f;
 	
 	// 회전 속도 (토크)
 	UPROPERTY(EditAnywhere, Category="Physics")
-	float SpinPower = 50000.0f;
+	float SpinPower = 100000.0f;
 	
 	// 반발 계수 (0.0 ~ 1.0): 1.0이면 에너지 손실 없이 튕김
 	UPROPERTY(EditAnywhere, Category = "Physics")
-	float Bounciness = 0.9f;
+	float Bounciness = 0.95f;
 
-	UFUNCTION() // 반드시 UFUNCTION 매크로 필요
+	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	// 1.0 = 지구 중력, 0.2 = 달 중력
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics")
+	float CustomGravityScale = 0.3f;
+	
+	FVector LastFrameVelocity;
 };

@@ -7,7 +7,7 @@
 ABuzzKillProjectile::ABuzzKillProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	SawMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SawMesh"));
 	RootComponent = SawMesh;
@@ -17,7 +17,10 @@ ABuzzKillProjectile::ABuzzKillProjectile()
 	//물리 시뮬레이션 활성화
 	SawMesh->SetSimulatePhysics(true);
 	//중력 적용
-	SawMesh->SetEnableGravity(true);
+	SawMesh->SetEnableGravity(false);
+	
+	// 공기 저항
+	SawMesh->SetLinearDamping(0.1f);
 	
 	//충돌 프로필 설정
 	SawMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
@@ -26,8 +29,8 @@ ABuzzKillProjectile::ABuzzKillProjectile()
 	// 연속 충돌 감지 (CCD) 켜기 - 톱날이 벽을 뚫고 나가는 것을 방지
 	SawMesh->BodyInstance.bUseCCD = true; 
 	
-	// 톱날이 동전처럼 옆으로 구르지 않고 수평을 유지하며 날아가게 하려면 회전 축을 잠가야 합니다.
-	// 예: Z축(Yaw)으로만 회전하고 X, Y는 잠금
+	// 톱날이 동전처럼 옆으로 구르지 않고 수평을 유지하며 날아가게 회전 축 잠금.
+	SawMesh->BodyInstance.bLockZRotation = true;
 	SawMesh->BodyInstance.bLockXRotation = true;
 	SawMesh->BodyInstance.bLockYRotation = true;
 }
@@ -65,6 +68,25 @@ void ABuzzKillProjectile::BeginPlay()
 	}
 }
 
+void ABuzzKillProjectile::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// 매 프레임 아래쪽으로 '약한 중력'을 가해줍니다.
+	if (SawMesh && SawMesh->IsSimulatingPhysics())
+	{
+		// 공식: F = m * a (힘 = 질량 * 가속도)
+		// 가속도 = 월드 중력(-980) * 우리가 원하는 배율(0.2)
+		float GravityZ = GetWorld()->GetGravityZ();
+		FVector CustomGravityForce = FVector(0.0f, 0.0f, GravityZ) * CustomGravityScale;
+		
+		// 액터의 질량을 곱해서 힘(Force)으로 변환해 적용
+		SawMesh->AddForce(CustomGravityForce * SawMesh->GetMass());
+		
+		LastFrameVelocity = SawMesh->GetPhysicsLinearVelocity();
+	}
+	
+}
+
 void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// 바닥 감지 및 파괴
@@ -79,7 +101,8 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 		return;    // 함수 종료
 	}
 
-	// 벽/천장 반사 (수동 계산)
+	/*
+	 // 벽/천장 반사 (수동 계산)
 	
 	// 현재 입사 속도 (V) 가져오기
 	FVector IncomingVelocity = SawMesh->GetPhysicsLinearVelocity();
@@ -98,6 +121,30 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	// 물리 엔진에 강제 적용
 	// (물리 엔진의 기본 마찰력 계산을 무시하고 우리가 계산한 이상적인 반사각을 덮어씌웁니다)
 	SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
+	*/
+	
+	// [수정] 2. 반사각 계산 (직접 물리 구현)
+    
+	// 현재 속도(GetPhysicsLinearVelocity) 대신 '저장한 속도(LastFrameVelocity)' 사용
+	FVector IncomingVelocity = LastFrameVelocity; 
+
+	FVector Normal = Hit.ImpactNormal;
+
+	// 공식: R = V - 2(V dot N)N
+	float DotProduct = FVector::DotProduct(IncomingVelocity, Normal);
+	FVector ReflectedVelocity = IncomingVelocity - (2 * DotProduct * Normal);
+
+	// 반발 계수 적용
+	ReflectedVelocity *= Bounciness;
+
+	// 3. 강제로 새 속도 할당
+	SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
+    
+	// (Clipping 방지)
+	// 가끔 톱날이 벽 안에 파묻혀서 못 나오는 걸 방지하기 위해 
+	// 반사 방향으로 아주 조금(1cm) 이동시킴.
+	FVector Nudge = Normal * 1.0f; 
+	SetActorLocation(GetActorLocation() + Nudge);
 	
 	// 디버그용: 튕기는 궤적 그리기
 	DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);

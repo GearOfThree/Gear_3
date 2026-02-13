@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "GameFramework/Character.h"
-#include "Logging/LogMacros.h"
 #include "EnemyNPCCharacter.generated.h"
 
 // 전방 선언 (헤더 파일 의존성 줄이기)
