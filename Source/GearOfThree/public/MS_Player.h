@@ -64,6 +64,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* CrouchAction;
 	
+	// ZoomIn
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ZoomInAction;
+	
 protected:
 	// 최대 속력 값 (default 값 지정)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
@@ -101,6 +105,12 @@ protected:
 	
 	// 몸 일어서기
 	void StopCrouch();
+	
+	// 초점 변경1
+	void ZoomIn();
+	
+	// 초점 변경2
+	void ZoomOut();
 	
 public:
 

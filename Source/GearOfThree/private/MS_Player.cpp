@@ -194,3 +194,12 @@ void AMS_Player::StopCrouch()
 	UnCrouch(); 
 }
 
+void AMS_Player::ZoomIn()
+{
+	
+}
+
+void AMS_Player::ZoomOut()
+{
+}
+
