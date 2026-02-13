@@ -8,6 +8,8 @@
 #include "EnemyNPCCharacter.generated.h"
 
 // 전방 선언 (헤더 파일 의존성 줄이기)
+
+class UStateTreeComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
@@ -75,6 +77,10 @@ protected:
 
 	// [함수] 발사 키를 눌렀을 때 호출됨
 	void FireSawBlade(const FInputActionValue& Value);
+	
+	//State Tree Component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
+	UStateTreeComponent* StateTreeComponent;
 public:
 
 	/** Constructor */
