@@ -61,14 +61,9 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	// 1. 컴포넌트 생성 (CreateDefaultSubobject)
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 	
-	StateTreeComponent = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComponent"));
-	
-	StateTreeComponent->SetComponentTickEnabled(true);
-	
-	// [초기화]
-	MaxAmmo = 10;
-	CurrentAmmo = MaxAmmo;
-	bIsReloading = false;
+	// 사이언 전용 설정
+	TeamSide = ETeamSide::Enemy; // 팀을 Enemy로 설정
+	MaxAmmo = 10;                // 사이언의 탄창 설정
 }
 
 void AEnemyNPCCharacter::BeginPlay()
@@ -174,19 +169,4 @@ void AEnemyNPCCharacter::FireSawBlade(const FInputActionValue& Value)
 		// WeaponComponent -> SawGun -> Projectile Spawn 순으로 실행됨
 		WeaponComponent->Fire();
 	}
-}
-
-void AEnemyNPCCharacter::DecreaseAmmo()
-{
-	if (CurrentAmmo > 0) CurrentAmmo--;
-}
-
-void AEnemyNPCCharacter::ReloadWeapon()
-{
-	CurrentAmmo = MaxAmmo; // 탄창 꽉 채움
-	bIsReloading = false;  // 장전 끝
-	
-	// [로그] 장전 완료
-	UE_LOG(LogTemp, Log, TEXT("[COMBAT] Reload Complete. Ammo Reset to %d"), MaxAmmo);
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("RELOAD COMPLETE!"));
 }

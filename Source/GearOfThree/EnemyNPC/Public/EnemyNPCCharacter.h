@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
-#include "GameFramework/Character.h"
-#include "Components/StateTreeComponent.h"
+#include "NPCCharacter.h"
 #include "EnemyNPCCharacter.generated.h"
 
 // 전방 선언 (헤더 파일 의존성 줄이기)
@@ -25,12 +24,9 @@ class ASawGunActor;
  *  Implements a controllable orbiting camera
  */
 UCLASS(abstract)
-class GEAROFTHREE_API AEnemyNPCCharacter : public ACharacter
+class GEAROFTHREE_API AEnemyNPCCharacter : public ANPCCharacter
 {
 	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	UStateTreeComponent* StateTreeComponent;
 	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
@@ -109,23 +105,8 @@ public:
 	virtual void DoLook(float Yaw, float Pitch);
 
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	
-	// [전투 변수] 에디터에서 수정 가능
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	int32 MaxAmmo = 10;
-
-	// [실시간 상태]
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	int32 CurrentAmmo = 10;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	bool bIsReloading = false;
-
-	// [전투 함수]
-	void DecreaseAmmo();
-	void ReloadWeapon();
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };

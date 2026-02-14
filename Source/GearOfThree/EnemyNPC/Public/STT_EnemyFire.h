@@ -24,6 +24,9 @@ struct GEAROFTHREE_API FSTT_EnemyFireInstanceData
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float ReloadTime = 2.0f;   // 장전 시간
 
+	UPROPERTY(EditAnywhere, Category = "Context")
+	AActor* TargetActor = nullptr;
+	
 	// [내부 타이머]
 	float TimeSinceLastFire = 0.0f;
 	float CurrentReloadTime = 0.0f;

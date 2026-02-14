@@ -3,6 +3,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/Controller.h"
 #include "AIController.h"
+#include "NPCCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 
@@ -35,32 +36,28 @@ EStateTreeRunStatus FSTT_EnemyChase::EnterState(FStateTreeExecutionContext& Cont
 EStateTreeRunStatus FSTT_EnemyChase::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
-	AActor* Owner = Cast<AActor>(Context.GetOwner());
-	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(Context.GetWorld(), 0);
+	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
+	AAIController* AIC = Cast<AAIController>(Owner->GetController());
 
-	if (!Owner || !Player) return EStateTreeRunStatus::Failed;
+	// [변경] 타겟 사용
+	AActor* Target = InstanceData.TargetActor; 
 
-	AAIController* AIC = Cast<AAIController>(Cast<APawn>(Owner)->GetController());
-	if (!AIC) return EStateTreeRunStatus::Failed;
+	if (!Owner || !AIC || !Target) return EStateTreeRunStatus::Failed;
 
-	float Distance = Owner->GetDistanceTo(Player);
+	float Distance = Owner->GetDistanceTo(Target);
 
-	// 1. 공격 사거리 안에 들어왔는지 체크
+	// 1. 공격 범위 안이면 공격 상태로 전환
 	if (Distance <= InstanceData.AttackRange)
 	{
 		AIC->StopMovement();
-		UE_LOG(LogTemp, Log, TEXT("=== [CHASE] Target Reached. Switching to Fire. ==="));
-		return EStateTreeRunStatus::Succeeded; // 공격 상태로 전환
+		return EStateTreeRunStatus::Succeeded;
 	}
 
-	// 2. 이동 명령 보강 (주기적으로 업데이트)
-	// AI의 현재 이동 상태를 확인하고, 멈춰있거나 타겟이 멀면 다시 명령을 내림
-	EPathFollowingStatus::Type MoveStatus = AIC->GetMoveStatus();
-	if (MoveStatus == EPathFollowingStatus::Idle)
+	// 2. 주기적인 이동 명령 갱신
+	// 타겟이 계속 움직이므로, AI의 이동 상태가 Idle이 되면 다시 타겟을 향해 뜁니다.
+	if (AIC->GetMoveStatus() == EPathFollowingStatus::Idle)
 	{
-		// 멈춰있는 경우 다시 추격 시작
-		AIC->MoveToActor(Player, InstanceData.AttackRange * 0.8f);
-		UE_LOG(LogTemp, Log, TEXT("=== [CHASE] Restarting Movement to Player ==="));
+		AIC->MoveToActor(Target, InstanceData.AttackRange * 0.9f);
 	}
 
 	return EStateTreeRunStatus::Running;

@@ -13,6 +13,9 @@ struct GEAROFTHREE_API FSTT_EnemyChaseInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	float AttackRange = 500.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Context")
+	AActor* TargetActor = nullptr;
 };
 
 // [2] 태스크 정의
