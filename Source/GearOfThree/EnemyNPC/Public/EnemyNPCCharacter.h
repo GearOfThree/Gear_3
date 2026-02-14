@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputMappingContext.h"
 #include "GameFramework/Character.h"
+#include "Components/StateTreeComponent.h"
 #include "EnemyNPCCharacter.generated.h"
 
 // 전방 선언 (헤더 파일 의존성 줄이기)
@@ -28,6 +29,9 @@ class GEAROFTHREE_API AEnemyNPCCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	UStateTreeComponent* StateTreeComponent;
+	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -77,10 +81,7 @@ protected:
 
 	// [함수] 발사 키를 눌렀을 때 호출됨
 	void FireSawBlade(const FInputActionValue& Value);
-	
-	//State Tree Component
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
-	UStateTreeComponent* StateTreeComponent;
+
 public:
 
 	/** Constructor */
@@ -90,8 +91,6 @@ protected:
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-protected:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -109,11 +108,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-public:
-
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
+	// [전투 변수] 에디터에서 수정 가능
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	int32 MaxAmmo = 10;
+
+	// [실시간 상태]
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	int32 CurrentAmmo = 10;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bIsReloading = false;
+
+	// [전투 함수]
+	void DecreaseAmmo();
+	void ReloadWeapon();
 };
