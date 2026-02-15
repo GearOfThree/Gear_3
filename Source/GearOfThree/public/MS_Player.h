@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "InputMappingContext.h"
+#include "MS_Weapon.h"
 #include "MS_Player.generated.h"
 
 class USpringArmComponent;
@@ -115,6 +116,14 @@ protected:
 	float InterpSpeed = 12.f;
 	
 	void SetADS(bool bNewADS);
+	
+protected:
+	UPROPERTY()
+	AMS_Weapon* CurrentWeapon;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AMS_Weapon> StarterWeaponClass;
+	
 public:
 
 	// 생성자
@@ -127,6 +136,8 @@ protected:
 
 protected:
 
+	void ChangeWeapon(TSubclassOf<AMS_Weapon> NewWeaponClass);
+	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 

@@ -11,9 +11,6 @@ class GEAROFTHREE_API AMS_Weapon : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	AMS_Weapon();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,4 +20,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+public:	
+	// Sets default values for this actor's properties
+	AMS_Weapon();
+
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* WeaponMesh;
+	
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<AMS_Weapon>> WeaponInventory;
+	
+	void Fire();
+	
+	
 };

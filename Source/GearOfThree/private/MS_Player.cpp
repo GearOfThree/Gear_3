@@ -13,6 +13,7 @@
 #include "InputActionValue.h"
 #include "GearOfThree.h"
 #include "public/MS_PlayerController.h"
+#include "public/MS_Weapon.h"
 #include "Tools/UEdMode.h"
 
 AMS_Player::AMS_Player()
@@ -69,7 +70,17 @@ void AMS_Player::BeginPlay()
 				Subsystem->AddMappingContext(DefaultMappingContext, 0);
 			}
 		}
-		
+	}
+	
+	if (StarterWeaponClass)
+	{
+		CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(StarterWeaponClass);
+
+		CurrentWeapon->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::SnapToTargetIncludingScale,
+			TEXT("WeaponSocket")
+		);
 	}
 }
 
@@ -143,6 +154,22 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	{
 		UE_LOG(LogGearOfThree, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+// 무기 교체
+void AMS_Player::ChangeWeapon(TSubclassOf<AMS_Weapon> NewWeaponClass)
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Destroy();
+	}
+
+	CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(NewWeaponClass);
+
+	CurrentWeapon->AttachToComponent(
+		GetMesh(),
+		FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("WeaponSocket")
+	);
 }
 
 void AMS_Player::Move(const FInputActionValue& Value)
