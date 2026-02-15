@@ -1,6 +1,4 @@
-﻿#include "C:\Users\PC\Documents\GitHub\Gear_3\Intermediate\Build\Win64\x64\GearOfThreeEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.h"
-
-#include "STT_FollowPlayer.h"
+﻿#include "STT_FollowPlayer.h"
 #include "NPCCharacter.h"
 #include "AIController.h"
 #include "StateTreeExecutionContext.h"

@@ -30,6 +30,10 @@ void AAllyNPCCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (WeaponComponent && StartingWeaponClass)
+	{
+		WeaponComponent->EquipWeapon(StartingWeaponClass, FName("ally_gun_socket"));
+	}
 	// 여기에 나중에 DamageSystem 연결
 }
 

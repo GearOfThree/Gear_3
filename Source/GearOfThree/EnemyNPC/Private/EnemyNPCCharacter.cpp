@@ -88,7 +88,6 @@ void AEnemyNPCCharacter::BeginPlay()
 	
 	if (WeaponComponent && StartingWeaponClass)
 	{
-		// "Weapon_Socket"은 스켈레톤에서 만든 소켓 이름과 정확히 일치해야 합니다.
 		WeaponComponent->EquipWeapon(StartingWeaponClass, FName("weapon_socket"));
 	}
 }

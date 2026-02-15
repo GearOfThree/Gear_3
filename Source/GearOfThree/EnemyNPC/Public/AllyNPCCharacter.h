@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AllyGunActor.h"
 #include "EnemyNPC/Public/NPCCharacter.h"
 #include "AllyNPCCharacter.generated.h"
 
-class ASawGunActor;
 class UWeaponComponent;
 /**
  * 
@@ -28,7 +28,7 @@ protected:
 
 	// 에디터에서 할당할 무기 블루프린트 클래스 (BP_AllyGun)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	TSubclassOf<ASawGunActor> StartingWeaponClass;
+	TSubclassOf<AAllyGunActor> StartingWeaponClass;
 	
 	// 블루프린트에서도 편집할 수 있도록 VisibleAnywhere를 줍니다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Appearance")
