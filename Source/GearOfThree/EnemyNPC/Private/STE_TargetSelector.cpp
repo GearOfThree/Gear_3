@@ -12,24 +12,33 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(Context.GetWorld(), 0);
 	AActor* FinalTarget = nullptr;
 
-	if (Player)
+	// 적군인지 아군인지 분기
+	if (Owner->TeamSide == ETeamSide::Enemy)
 	{
+		// 적군 로직
 		float DistanceToPlayer = Owner->GetDistanceTo(Player);
-
-		// [우선순위 1] 플레이어가 사거리 안에 있는가?
 		if (DistanceToPlayer <= InstanceData.PlayerPriorityRange)
 		{
-			FinalTarget = Player;
+			FinalTarget = Player; // 플레이어가 가까우면 플레이어 공격
 		}
 		else
 		{
-			// [우선순위 2] 플레이어가 멀다면 가장 가까운 다른 팀 NPC 검색
-			FinalTarget = Owner->FindClosestEnemy();
-            
-			// [예외] 주변에 아무 적도 없다면, 멀리 있는 플레이어라도 주시
+			FinalTarget = Owner->FindClosestEnemy(); // 멀면 근처 아군 NPC 검색
 			if (!FinalTarget) FinalTarget = Player;
 		}
 	}
-
+	else if (Owner->TeamSide == ETeamSide::Ally)
+	{
+		// 아군 로직
+		// 아군은 플레이어를 공격하면 안 됨! 오직 '적군 팀'만 찾음
+		FinalTarget = Owner->FindClosestEnemy(); 
+        
+		// 적군이 하나도 없다면? FinalTarget은 nullptr가 됨
+	}
+	
+	//Evaluator 자체 출력 데이터 업데이트 (State Tree 내부 바인딩용)
 	InstanceData.SelectedTarget = FinalTarget;
+
+	//주인 캐릭터의 변수 업데이트 (무기 조준용)
+	Owner->SetCurrentTargetActor(FinalTarget);
 }

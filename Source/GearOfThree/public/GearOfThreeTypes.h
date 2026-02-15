@@ -10,5 +10,5 @@ enum class ETeamSide : uint8
 {
 	Player  UMETA(DisplayName = "Player"),
 	Enemy   UMETA(DisplayName = "Enemy"),
-	Neutral UMETA(DisplayName = "Neutral")
+	Ally	UMETA(DisplayName = "Ally")
 };

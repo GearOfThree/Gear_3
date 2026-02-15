@@ -15,50 +15,44 @@ UWeaponComponent::UWeaponComponent()
 
 }
 
-void UWeaponComponent::EquipWeapon(TSubclassOf<AActor> WeaponClass, FName SocketName)
+void UWeaponComponent::EquipWeapon(TSubclassOf<AGearWeaponBase> WeaponClass, FName SocketName)
 {
 	if (!WeaponClass) return;
 
-	// 1. 이 컴포넌트를 가진 주인(사이언)을 가져옵니다.
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if (!OwnerCharacter) return;
-
-	// 2. 무기 스폰 (SpawnActorFromClass 노드 역할)
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = OwnerCharacter;
-	SpawnParams.Instigator = OwnerCharacter->GetInstigator();
-
-	CurrentWeapon = GetWorld()->SpawnActor<ASawGunActor>(WeaponClass, OwnerCharacter->GetActorTransform(), SpawnParams);
-
-	// 3. 무기 부착 (AttachToComponent 노드 역할)
+	// 1. 기존 무기 제거 (중복 장착 방지)
 	if (CurrentWeapon)
 	{
-		// 주인 캐릭터의 메시(Mesh)를 찾습니다.
-		// 일반적인 GetMesh() 대신 사이언의 AdditionalMesh를 사용한다면 그 컴포넌트를 찾아야 합니다.
-		USkeletalMeshComponent* CharacterMesh = OwnerCharacter->FindComponentByClass<USkeletalMeshComponent>();
-
-		if (CharacterMesh)
-		{
-			CurrentWeapon->AttachToComponent(CharacterMesh, 
-				FAttachmentTransformRules::SnapToTargetIncludingScale, 
-				SocketName);
-		}
+		CurrentWeapon->Destroy();
 	}
-}
 
-// Called when the game starts
-void UWeaponComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
+	// 2. 주인 캐릭터 정보 가져오기
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (!OwnerCharacter || !GetWorld()) return;
 
+	// 3. 무기 액터 스폰
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
 
-// Called every frame
-void UWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	CurrentWeapon = GetWorld()->SpawnActor<AGearWeaponBase>(
+		WeaponClass, 
+		FVector::ZeroVector, 
+		FRotator::ZeroRotator, 
+		SpawnParams
+	);
 
+	// 소켓에 부착
+	if (CurrentWeapon && OwnerCharacter->GetMesh())
+	{
+		// 소켓의 위치/회전값에 무기를 장착
+		CurrentWeapon->AttachToComponent(
+			OwnerCharacter->GetMesh(), 
+			FAttachmentTransformRules::SnapToTargetIncludingScale, 
+			SocketName
+		);
+        
+		UE_LOG(LogTemp, Log, TEXT("Weapon equipped to socket: %s"), *SocketName.ToString());
+	}
 }
 
 void UWeaponComponent::Fire()

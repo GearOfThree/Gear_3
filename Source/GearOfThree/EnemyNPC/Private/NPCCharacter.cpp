@@ -17,7 +17,7 @@ ANPCCharacter::ANPCCharacter()
 	bIsReloading = false;
 	
 	// 기본 팀 설정 (나중에 블루프린트에서 변경 가능)
-	TeamSide = ETeamSide::Neutral; 
+	TeamSide = ETeamSide::Ally; 
 }
 
 void ANPCCharacter::PostInitializeComponents()

@@ -80,7 +80,7 @@ EStateTreeRunStatus FSTT_EnemyFire::Tick(FStateTreeExecutionContext& Context, co
 		UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>();
 		if (WeaponComp)
 		{
-			WeaponComp->Fire(); // 이 내부에서 아까 수정한 LookAtRotation이 작동함
+			WeaponComp->Fire(); //
 			Owner->DecreaseAmmo();
 			InstanceData.TimeSinceLastFire = 0.0f;
 		}

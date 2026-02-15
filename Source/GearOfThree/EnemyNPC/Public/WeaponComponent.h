@@ -6,28 +6,30 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
+USTRUCT(BlueprintType)
+struct FWeaponData
+{
+	GENERATED_BODY()
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AGearWeaponBase> WeaponClass; // 장착할 무기 클래스
+};
+
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GEAROFTHREE_API UWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	UWeaponComponent();
-
-	void EquipWeapon(TSubclassOf<AActor> WeaponClass, FName SocketName);
+public:
 	
-	// 사격 함수
-	void Fire();
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	UWeaponComponent();
+	
+	void Fire(); // 이제 내부에서 CurrentWeapon->Fire()만 호출
+	// 무기를 소환하고 손 소켓에 부착하는 함수
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipWeapon(TSubclassOf<AGearWeaponBase> WeaponClass, FName SocketName);
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+private:
 	UPROPERTY()
-	class ASawGunActor* CurrentWeapon;
+	TObjectPtr<AGearWeaponBase> CurrentWeapon;
 };

@@ -1,34 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GearWeaponBase.h"
 #include "SawGunActor.generated.h"
 
-class ABuzzKillProjectile;
-
 UCLASS()
-class GEAROFTHREE_API ASawGunActor : public AActor
+class GEAROFTHREE_API ASawGunActor : public AGearWeaponBase
 {
 	GENERATED_BODY()
-	
-protected:
-	// 무기 외형을 담당할 스켈레탈 메시
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USkeletalMeshComponent* WeaponMesh;
-	
-public:	
-	// Sets default values for this actor's properties
-	ASawGunActor();
-	
-	// 사격 함수
-	void Fire();
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-	// [중요] 블루프린트에서 할당할 톱날 투사체 클래스
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
-	TSubclassOf<ABuzzKillProjectile> ProjectileClass;
+public:
+	ASawGunActor();
+
+	// 부모의 Fire를 오버라이드하여 톱날 발사 구현
+	virtual void Fire() override;
+
+protected:
+	// 톱날 투사체 클래스
+	UPROPERTY(EditAnywhere, Category = "Weapon | Combat")
+	TSubclassOf<class ABuzzKillProjectile> ProjectileClass;
 };
