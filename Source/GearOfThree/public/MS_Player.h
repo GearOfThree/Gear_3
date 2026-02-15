@@ -29,6 +29,18 @@ class AMS_Player : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+protected: // 지역변수 초기화 구역
+
+	// Aim Down Sight
+	bool bIsADS = false;
+	
+	float TargetArmLength;
+	
+	FVector TargetSocketOffset;
+	// 시야각
+	float TargetFOV;
+	
 	
 protected:
 	
@@ -38,6 +50,8 @@ protected:
 	
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
+	
+	virtual void Tick( float DeltaTime ) override;
 protected:
 
 	/** Jump Input Action */
@@ -76,10 +90,35 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
 	bool IsCrouched = false;
 	
+protected:
+	// 기본값
+	UPROPERTY(EditAnywhere, Category="ADS")
+	float HipArmLength = 300.f;
+
+	UPROPERTY(EditAnywhere, Category="ADS")
+	FVector HipSocketOffset = FVector(0.f, 0.f, 0.f);
+
+	UPROPERTY(EditAnywhere, Category="ADS")
+	float HipFOV = 120.f;
+
+	// ADS 값 (오른쪽 어깨)
+	UPROPERTY(EditAnywhere, Category="ADS")
+	float ADSArmLength = 150.f;
+
+	UPROPERTY(EditAnywhere, Category="ADS")
+	FVector ADSSocketOffset = FVector(0.f, 70.f, 60.f);
+
+	UPROPERTY(EditAnywhere, Category="ADS")
+	float ADSFOV = 65.f;
+
+	UPROPERTY(EditAnywhere, Category="ADS")
+	float InterpSpeed = 12.f;
+	
+	void SetADS(bool bNewADS);
 public:
 
-	/** Constructor */
-	AMS_Player();	
+	// 생성자
+	AMS_Player();
 
 protected:
 
@@ -106,11 +145,9 @@ protected:
 	// 몸 일어서기
 	void StopCrouch();
 	
-	// 초점 변경1
-	void ZoomIn();
+	void StartADS();
 	
-	// 초점 변경2
-	void ZoomOut();
+	void StopADS();
 	
 public:
 

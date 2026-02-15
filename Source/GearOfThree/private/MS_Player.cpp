@@ -41,7 +41,7 @@ AMS_Player::AMS_Player()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f;
+	CameraBoom->TargetArmLength = 300.0f;
 	CameraBoom->bUsePawnControlRotation = true;
 
 	// Create a follow camera
@@ -49,8 +49,10 @@ AMS_Player::AMS_Player()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	TargetArmLength = HipArmLength;
+	TargetSocketOffset = HipSocketOffset;
+	TargetFOV = HipFOV;
+	
 }
 
 void AMS_Player::BeginPlay()
@@ -71,8 +73,45 @@ void AMS_Player::BeginPlay()
 	}
 }
 
+void AMS_Player::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	// InterpTo 을 사용하기 때문에 초점 변경되는 속도록 조절할 수 있음
+	// Arm Length 보간
+	float NewArm = FMath::FInterpTo(
+		CameraBoom->TargetArmLength,
+		TargetArmLength,
+		DeltaTime,
+		InterpSpeed
+	);
+	CameraBoom->TargetArmLength = NewArm;
+
+	// SocketOffset 보간
+	FVector NewOffset = FMath::VInterpTo(
+		CameraBoom->SocketOffset,
+		TargetSocketOffset,
+		DeltaTime,
+		InterpSpeed
+	);
+	CameraBoom->SocketOffset = NewOffset;
+
+	// FOV 보간
+	float NewFOV = FMath::FInterpTo(
+		FollowCamera->FieldOfView,
+		TargetFOV,
+		DeltaTime,
+		InterpSpeed
+	);
+	FollowCamera->SetFieldOfView(NewFOV);
+}
+
+
+
 void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
@@ -91,9 +130,14 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMS_Player::Sprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMS_Player::StopSprint);
 		
-		// Crouch
+		// Crouch(엄패 기능을 위해 필요함)
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMS_Player::StartCrouch);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AMS_Player::StopCrouch);
+	
+		// ZoomIn // 토글 방식이 아닌 홀드 방식으로 설정
+		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &AMS_Player::StartADS);
+		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Completed, this, &AMS_Player::StopADS);
+		
 	}
 	else
 	{
@@ -194,12 +238,37 @@ void AMS_Player::StopCrouch()
 	UnCrouch(); 
 }
 
-void AMS_Player::ZoomIn()
+void AMS_Player::SetADS(bool bNewADS)
 {
-	
+	bIsADS = bNewADS;
+
+	if (bIsADS)
+	{
+		TargetArmLength = ADSArmLength;
+		TargetSocketOffset = ADSSocketOffset;
+		TargetFOV = ADSFOV;
+
+		// 조준 중 캐릭터가 카메라 방향으로 회전
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+	}
+	else
+	{
+		TargetArmLength = HipArmLength;
+		TargetSocketOffset = HipSocketOffset;
+		TargetFOV = HipFOV;
+
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
 }
 
-void AMS_Player::ZoomOut()
+void AMS_Player::StartADS()
 {
+	SetADS(true);
 }
 
+void AMS_Player::StopADS()
+{
+	SetADS(false);
+}
