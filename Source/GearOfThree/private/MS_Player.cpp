@@ -12,6 +12,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
+#include "Blueprint/UserWidget.h"
 #include "public/MS_PlayerController.h"
 #include "public/MS_Weapon.h"
 #include "Tools/UEdMode.h"
@@ -149,6 +150,8 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &AMS_Player::StartADS);
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Completed, this, &AMS_Player::StopADS);
 		
+		// 무기 슬롯 보이기
+		EnhancedInputComponent->BindAction(OpenWeaponSlotAction, ETriggerEvent::Started, this, &AMS_Player::ToggleWeaponSlot);
 	}
 	else
 	{
@@ -298,4 +301,97 @@ void AMS_Player::StartADS()
 void AMS_Player::StopADS()
 {
 	SetADS(false);
+}
+
+// ############################ 무기 선택 ############################
+
+void AMS_Player::ToggleWeaponSlot()
+{
+	
+	UE_LOG(LogTemp, Warning, TEXT("ToggleWeaponSlot CALLED"));
+	bSlotOpen = !bSlotOpen;
+	if (bSlotOpen)
+	{
+		ShowWeaponWheelUI(true);
+		
+	}
+	else
+	{
+		ShowWeaponWheelUI(false);
+		
+	}
+}
+
+void AMS_Player::ShowWeaponWheelUI(bool bShow)
+{
+	AMS_PlayerController* playerController = Cast<AMS_PlayerController>(GetController());
+	UE_LOG(LogTemp, Warning, TEXT("ShowWeaponWheelUI(%d) PC=%s"), bShow, *GetNameSafe(playerController));
+	if (!playerController || !playerController->IsLocalController()) return;
+	
+	if (bShow)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WeaponWheelWidgetClass=%s"), *GetNameSafe(WeaponWheelWidgetClass));
+		
+		if (!WeaponWheelWidget && WeaponWheelWidgetClass)
+		{
+			// WeaponWheelWidget = CreateWidget<UMS_WeaponWidget>(GetWorld(), WeaponWheelWidgetClass);
+			WeaponWheelWidget = CreateWidget<UMS_WeaponWidget>(playerController, WeaponWheelWidgetClass);
+			UE_LOG(LogTemp, Warning, TEXT("CreateWidget => %s"), *GetNameSafe(WeaponWheelWidget));
+		}
+		
+		
+		if (WeaponWheelWidget)
+		{
+			WeaponWheelWidget->AddToViewport(10);
+			UE_LOG(LogTemp, Warning, TEXT("AddedToViewport"));
+			
+			AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController());
+			if (PlayerController)
+			{
+				PlayerController->bShowMouseCursor = true;
+				FInputModeGameAndUI Mode;
+				Mode.SetWidgetToFocus(WeaponWheelWidget->TakeWidget());
+				PlayerController->SetInputMode(Mode);
+				PlayerController->SetIgnoreLookInput(true);
+			}
+			
+		}
+	}
+	else
+	{
+		if (!WeaponWheelWidget) return;
+		
+		EWeaponDirection Direction = WeaponWheelWidget->GetSelectedDirection();
+		WeaponWheelWidget->RemoveFromParent();
+		AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController());
+		if (PlayerController)
+		{
+			PlayerController->bShowMouseCursor = false;
+			PlayerController->SetInputMode(FInputModeGameOnly());
+			PlayerController->SetIgnoreLookInput(false);
+		}
+		EquipWeapon(Direction);
+	}
+}
+
+void AMS_Player::EquipWeapon(EWeaponDirection direction)
+{
+	if (!WeaponMap.Contains(direction)) return;
+
+	AMS_Weapon* NewWeapon = WeaponMap[direction];
+	if (!NewWeapon) return;
+	
+	if(CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(true);
+	}
+	
+	NewWeapon->SetActorHiddenInGame(false);
+	NewWeapon->AttachToComponent(
+		GetMesh(),
+		FAttachmentTransformRules::SnapToTargetIncludingScale,
+		TEXT("WeaponSocket")	
+	);
+	
+	CurrentWeapon = NewWeapon;
 }
