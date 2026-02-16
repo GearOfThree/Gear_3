@@ -17,17 +17,17 @@ ASawGunActor::ASawGunActor()
 
 void ASawGunActor::Fire()
 {
-	// 1. 기본 유효성 검사 (부모 클래스의 컴포넌트 활용)
+	// 기본 유효성 검사 (부모 클래스의 컴포넌트 활용)
 	if (!WeaponMesh || !ProjectileClass) return;
 
-	// 2. 무기를 들고 있는 주인(NPC) 가져오기
+	// 무기를 들고 있는 주인(NPC) 가져오기
 	ANPCCharacter* WeaponOwner = Cast<ANPCCharacter>(GetOwner());
 	if (!WeaponOwner) return;
 
-	// 3. 총구 위치 가져오기 (소켓 이름 "Muzzle")
-	FVector MuzzlePos = WeaponMesh->GetSocketLocation(FName("Muzzle"));
+	// 총구 위치 가져오기 (소켓 이름 "muzzle")
+	FVector MuzzlePos = WeaponMesh->GetSocketLocation(FName("muzzle"));
     
-	// 4. 발사 방향 결정
+	// 발사 방향 결정
 	FRotator SpawnRotation;
 
 	// [핵심 변경] State Tree에서 결정된 타겟 정보를 NPC로부터 가져옵니다.

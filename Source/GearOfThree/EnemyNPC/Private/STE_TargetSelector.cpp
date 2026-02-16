@@ -41,4 +41,13 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 
 	//주인 캐릭터의 변수 업데이트 (무기 조준용)
 	Owner->SetCurrentTargetActor(FinalTarget);
+	
+	// [디버깅 로그] 화면 왼쪽 위에 글씨를 띄웁니다.
+	if (Owner->TeamSide == ETeamSide::Ally)
+	{
+		FString TargetName = FinalTarget ? FinalTarget->GetName() : TEXT("None (Following Player)");
+		FColor LogColor = FinalTarget ? FColor::Red : FColor::Green;
+        
+		GEngine->AddOnScreenDebugMessage(1, 0.0f, LogColor, FString::Printf(TEXT("Sally's Target: %s"), *TargetName));
+	}
 }

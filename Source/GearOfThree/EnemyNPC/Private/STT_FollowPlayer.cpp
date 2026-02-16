@@ -2,14 +2,14 @@
 #include "NPCCharacter.h"
 #include "AIController.h"
 #include "StateTreeExecutionContext.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 
 EStateTreeRunStatus FSTT_FollowPlayer::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
-	
-	// 1. 필요한 컴포넌트 및 플레이어 가져오기
+    
 	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
 	if (!Owner) return EStateTreeRunStatus::Failed;
 
@@ -18,27 +18,33 @@ EStateTreeRunStatus FSTT_FollowPlayer::Tick(FStateTreeExecutionContext& Context,
 
 	if (!AIC || !Player) return EStateTreeRunStatus::Failed;
 
-	// 2. 플레이어와의 거리 계산
+	// 플레이어와의 거리 계산
 	float Distance = Owner->GetDistanceTo(Player);
 
-	// 3. 거리별 행동 결정
+	// 목표 지점 계산 (플레이어의 앞 500 unit 지점)
+	// GetActorForwardVector() * -1은 뒤쪽 방향을 의미합니다.
+	FVector PlayerBackLocation = Player->GetActorLocation() + (Player->GetActorForwardVector() * 500.0f);
+
 	if (Distance > InstanceData.FollowRadius)
 	{
-		// 플레이어가 멀어지면 추적 시작
-		// StopRadius 근처까지 이동하도록 설정
-		AIC->MoveToActor(Player, InstanceData.StopRadius);
+		// MoveToActor 대신 MoveToLocation 사용
+		// 이제 Actor를 쳐다보지 않고, 계산된 좌표(등 뒤)를 향해 갑니다.
+		AIC->MoveToLocation(PlayerBackLocation, InstanceData.StopRadius);
+       
+		//이동 중에는 이동 방향을 보게 설정 (몸통 회전 자연스럽게)
+		Owner->bUseControllerRotationYaw = false; 
+		if (Owner->GetCharacterMovement())
+		{
+			Owner->GetCharacterMovement()->bOrientRotationToMovement = true;
+		}
 	}
 	else if (Distance <= InstanceData.StopRadius)
 	{
-		// 충분히 가까워지면 이동 중지
-		// 현재 이동 중이라면 멈추게 함
 		if (AIC->GetMoveStatus() != EPathFollowingStatus::Idle)
 		{
 			AIC->StopMovement();
 		}
 	}
 
-	// 이 태스크는 '따라가기' 상태를 계속 유지해야 하므로 Running을 반환합니다.
-	// (전투 상태 등으로 전환되는 것은 State Tree의 Transition에서 담당합니다.)
 	return EStateTreeRunStatus::Running;
 }
