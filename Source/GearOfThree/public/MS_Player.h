@@ -118,8 +118,9 @@ protected:
 	void SetADS(bool bNewADS);
 	
 protected:
-	UPROPERTY()
-	AMS_Weapon* CurrentWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
+	// AMS_Weapon* CurrentWeapon;
+	TObjectPtr<AMS_Weapon> CurrentWeapon;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AMS_Weapon> StarterWeaponClass;

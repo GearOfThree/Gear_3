@@ -24,13 +24,19 @@ public:
 	// Sets default values for this actor's properties
 	AMS_Weapon();
 
-	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* WeaponMesh;
+protected:
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
+	// TObjectPtr<USceneComponent> Root;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
+	TObjectPtr<UStaticMeshComponent> WeaponMesh;
 	
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AMS_Weapon>> WeaponInventory;
 	
 	void Fire();
 	
-	
+public:
+	UFUNCTION(BlueprintPure, Category="Weapon")
+	UStaticMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 };
