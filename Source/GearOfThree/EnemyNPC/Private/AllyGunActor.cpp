@@ -28,7 +28,7 @@ void AAllyGunActor::Fire()
 	FVector SpawnLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
 	FRotator SpawnRotation;
 
-	// 3. 타겟(사이언) 조준 로직
+	// 3. 타겟 조준 로직
 	AActor* Target = OwnerNPC->GetCurrentTarget();
 	if (Target)
 	{

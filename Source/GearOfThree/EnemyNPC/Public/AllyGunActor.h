@@ -19,9 +19,7 @@ public:
 	virtual void Fire() override;
 	
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TSubclassOf<class AAllyProjectile> ProjectileClass;
 

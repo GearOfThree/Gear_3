@@ -15,7 +15,7 @@ struct GEAROFTHREE_API FSTE_TargetSelectorInstanceData
 
 	// 최종 선정된 타겟 (태스크에 연결될 값)
 	UPROPERTY(EditAnywhere, Category = "Output")
-	AActor* SelectedTarget = nullptr;
+	TObjectPtr<AActor> SelectedTarget = nullptr;
 };
 
 USTRUCT(meta = (DisplayName = "Target Selector", Category = "Enemy AI"))

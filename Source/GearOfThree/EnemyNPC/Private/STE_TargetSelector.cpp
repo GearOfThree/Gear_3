@@ -34,6 +34,20 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 		FinalTarget = Owner->FindClosestEnemy(); 
         
 		// 적군이 하나도 없다면? FinalTarget은 nullptr가 됨
+		
+		// 디버그 로그 추가
+		if (FinalTarget)
+		{
+			// 적을 찾았을 때: 빨간색 로그
+			GEngine->AddOnScreenDebugMessage(10, 0.0f, FColor::Red, 
+				FString::Printf(TEXT("👁️ [Eyes] Found Enemy: %s"), *FinalTarget->GetName()));
+		}
+		else
+		{
+			// 적을 못 찾았을 때: 노란색 로그
+			GEngine->AddOnScreenDebugMessage(10, 0.0f, FColor::Yellow, 
+				TEXT("👁️ [Eyes] No Enemy Found... Looking at Player"));
+		}
 	}
 	
 	//Evaluator 자체 출력 데이터 업데이트 (State Tree 내부 바인딩용)
@@ -42,12 +56,4 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 	//주인 캐릭터의 변수 업데이트 (무기 조준용)
 	Owner->SetCurrentTargetActor(FinalTarget);
 	
-	// [디버깅 로그] 화면 왼쪽 위에 글씨를 띄웁니다.
-	if (Owner->TeamSide == ETeamSide::Ally)
-	{
-		FString TargetName = FinalTarget ? FinalTarget->GetName() : TEXT("None (Following Player)");
-		FColor LogColor = FinalTarget ? FColor::Red : FColor::Green;
-        
-		GEngine->AddOnScreenDebugMessage(1, 0.0f, LogColor, FString::Printf(TEXT("Sally's Target: %s"), *TargetName));
-	}
 }

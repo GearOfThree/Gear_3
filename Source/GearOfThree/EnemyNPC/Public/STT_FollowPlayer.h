@@ -29,4 +29,10 @@ struct GEAROFTHREE_API FSTT_FollowPlayer : public FStateTreeTaskCommonBase
 
 	// 매 프레임 플레이어와의 거리를 체크하여 이동 명령을 내립니다.
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	
+	// 상태에 진입할 때 1번 실행됨
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
+
+	// 상태에서 빠져나갈 때 1번 실행됨
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };

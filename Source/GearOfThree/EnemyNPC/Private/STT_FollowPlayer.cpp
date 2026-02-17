@@ -48,3 +48,20 @@ EStateTreeRunStatus FSTT_FollowPlayer::Tick(FStateTreeExecutionContext& Context,
 
 	return EStateTreeRunStatus::Running;
 }
+
+EStateTreeRunStatus FSTT_FollowPlayer::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	// 화면에 초록색으로 "Follow Start" 출력
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("🟢 [State] Follow Player : START"));
+    
+	// 로그 창에도 남기기
+	UE_LOG(LogTemp, Log, TEXT("State Tree: Enter Follow Player"));
+
+	return EStateTreeRunStatus::Running;
+}
+
+void FSTT_FollowPlayer::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
+{
+	// 상태가 끝날 때 (전투로 넘어갈 때)
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("⚪ [State] Follow Player : END"));
+}

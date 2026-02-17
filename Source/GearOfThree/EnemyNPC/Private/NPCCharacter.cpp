@@ -45,27 +45,34 @@ void ANPCCharacter::ReloadWeapon()
 AActor* ANPCCharacter::FindClosestEnemy()
 {
 	AActor* ClosestEnemy = nullptr;
-	float MinDistance = MAX_FLT;
+	float MinDistance = FLT_MAX;
 
-	// 월드 내 모든 ANPCCharacter를 찾음 (나중에 팀원이 만든 DamageComponent 기반으로 확장 가능)
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANPCCharacter::StaticClass(), FoundActors);
+	// 1. 월드에 있는 모든 NPC를 검색 (플레이어 제외)
+	TArray<AActor*> AllNPCs;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANPCCharacter::StaticClass(), AllNPCs);
 
-	for (AActor* Actor : FoundActors)
+	for (AActor* Actor : AllNPCs)
 	{
-		ANPCCharacter* OtherNPC = Cast<ANPCCharacter>(Actor);
-		if (!OtherNPC || OtherNPC == this) continue;
+		ANPCCharacter* NPC = Cast<ANPCCharacter>(Actor);
+        
+		// 2. 나 자신은 무시
+		if (!NPC || NPC == this) continue;
 
-		// 팀이 다를 때만 적으로 간주
-		if (OtherNPC->TeamSide != this->TeamSide)
+		// 3. [중요] 죽은 적은 무시 (나중에 체력 0되면 IsDead=true로 설정 필요)
+		// if (NPC->IsDead()) continue; 
+
+		// 나와 팀이 다른 경우만 적군으로 간주
+		// (TeamSide가 다르면 적으로 인식!)
+		if (NPC->TeamSide != this->TeamSide) 
 		{
-			float Distance = GetDistanceTo(OtherNPC);
-			if (Distance < MinDistance)
+			float Dist = GetDistanceTo(NPC);
+			if (Dist < MinDistance)
 			{
-				MinDistance = Distance;
-				ClosestEnemy = OtherNPC;
+				MinDistance = Dist;
+				ClosestEnemy = NPC;
 			}
 		}
 	}
+
 	return ClosestEnemy;
 }
