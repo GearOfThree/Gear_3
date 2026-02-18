@@ -21,8 +21,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UTexture2D> Icon = nullptr;
 	
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// TObjectPtr<AMS_Weapon> WeaponMesh = nullptr;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UStaticMesh> WeaponMesh = nullptr;
+	TSubclassOf<AActor> WeaponClass;
+	
 	// 손 위치도 저장!!
 	
 };

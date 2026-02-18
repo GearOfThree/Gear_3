@@ -389,26 +389,26 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 			// 왼쪽
 			{
 				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun01-AR15.Gun01-AR15'"));
-				UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AR-15_style_rifle/ar_15_style_rifle/StaticMeshes/ar_15_style_rifle.ar_15_style_rifle'"));
+				// UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AR-15_style_rifle/ar_15_style_rifle/StaticMeshes/ar_15_style_rifle.ar_15_style_rifle'"));
 				
 				FMS_WeaponSlotData data;
 				data.Direction = EWeaponDirection::Left;
 				data.DisplayName = FText::FromString(TEXT("AR15"));
 				data.Icon = ImageIcon;
-				data.WeaponMesh = GunMesh;
+				data.WeaponClass = AR15WeaponClass;
 				DataMap.Add(EWeaponDirection::Left, data);
 			}
 			
 			// 오른쪽
 			{
 				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun02-AK105.Gun02-AK105'"));
-				UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AK-105/AK105fbx.AK105fbx'"));
+				// UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AK-105/AK105fbx.AK105fbx'"));
 				
 				FMS_WeaponSlotData data;
 				data.Direction = EWeaponDirection::Right;
 				data.DisplayName = FText::FromString(TEXT("AK105"));
 				data.Icon = ImageIcon;
-				data.WeaponMesh = GunMesh;
+				data.WeaponClass = AK105WeaponClass;
 				DataMap.Add(EWeaponDirection::Right, data);
 			}
 			
@@ -485,13 +485,43 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	if (!WeaponMeshComp) return;
 	
 	FMS_WeaponSlotData* Data = WeaponSlotDataMap.Find(direction);
-	if (!Data || !Data->WeaponMesh)
+	if (!Data || !Data->WeaponClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon failed. Dir=%d Mesh=%s"),
-			(int32)direction, *GetNameSafe(Data ? Data->WeaponMesh : nullptr));
+			(int32)direction, *GetNameSafe(Data ? Data->WeaponClass : nullptr));
 		return;
 	}
 	
-	WeaponMeshComp->SetStaticMesh(Data->WeaponMesh);
-	UE_LOG(LogTemp, Warning, TEXT("Equipped: %s"), *Data->DisplayName.ToString());
+	// WeaponMeshComp->SetStaticMesh(Data->WeaponMesh);
+	// UE_LOG(LogTemp, Warning, TEXT("Equipped: %s"), *Data->DisplayName.ToString());
+	
+	// 기존 무기 제거 
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->Destroy();
+		CurrentWeapon = nullptr;
+	}
+	
+	// 새 무기 스폰 
+	FActorSpawnParameters Params;
+	Params.Owner = this;
+	Params.Instigator = GetInstigator();
+
+	CurrentWeapon = GetWorld()->SpawnActor<AActor>(Data->WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, Params);
+	if (!IsValid(CurrentWeapon))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Spawn failed"));
+		return;
+	}
+	
+	// 손 소켓에 부착
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	static const FName WeaponSocketName(TEXT("WeaponSocket")); // 네 소켓명으로
+	CurrentWeapon->AttachToComponent(
+		MeshComp,
+		FAttachmentTransformRules::SnapToTargetIncludingScale,
+		WeaponSocketName
+	);
+	
+	UE_LOG(LogTemp, Warning, TEXT("Equipped weapon: %s"), *Data->DisplayName.ToString());
 }

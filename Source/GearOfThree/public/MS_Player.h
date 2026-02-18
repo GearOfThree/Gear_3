@@ -126,7 +126,7 @@ protected:
 protected: // 무기 관련 내용
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
-	TObjectPtr<AMS_Weapon> CurrentWeapon;
+	AActor* CurrentWeapon = nullptr;
 
 	bool bSlotOpen = false;
 	
@@ -148,6 +148,12 @@ protected: // 무기 관련 내용
 	
 	UPROPERTY()
 	TMap<EWeaponDirection, FMS_WeaponSlotData> WeaponSlotDataMap;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
+	TSubclassOf<AMS_Weapon> AR15WeaponClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
+	TSubclassOf<AMS_Weapon> AK105WeaponClass;
 public:
 
 	// 생성자
