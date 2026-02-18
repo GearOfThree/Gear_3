@@ -13,6 +13,8 @@ public:
 	AAllyProjectile();
 
 protected:
+	
+	virtual void BeginPlay() override;
 	// 1. 충돌 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Collision")
 	class USphereComponent* CollisionComp;

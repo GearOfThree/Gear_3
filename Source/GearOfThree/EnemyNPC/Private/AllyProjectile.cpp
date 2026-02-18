@@ -9,7 +9,8 @@ AAllyProjectile::AAllyProjectile()
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->OnComponentHit.AddDynamic(this, &AAllyProjectile::OnHit); // 충돌 이벤트 연결
 	RootComponent = CollisionComp;
-
+	CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
+	
 	// 외형 설정
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh"));
 	ProjectileMesh->SetupAttachment(RootComponent);
@@ -26,12 +27,36 @@ AAllyProjectile::AAllyProjectile()
 	InitialLifeSpan = 3.0f; // 3초 뒤 자동 소멸
 }
 
-void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AAllyProjectile::BeginPlay()
 {
-	// 여기에 나중에 데미지 로직과 파티클 효과를 추가할 겁니다.
-	if (OtherActor && (OtherActor != this) && OtherComp)
+	Super::BeginPlay();
+
+	// [확인 1] 총알이 세상에 태어났는지 확인
+	FString OwnerName = GetOwner() ? GetOwner()->GetName() : TEXT("No Owner");
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, 
+		FString::Printf(TEXT("🔫 [Bullet] Spawned! Owner: %s"), *OwnerName));
+
+	// [확인 2] 총알 자체의 콜리전이 주인을 무시하도록 확실하게 설정
+	if (GetOwner())
 	{
-		Destroy(); // 일단 부딪히면 사라지게 설정
+		CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
 	}
 }
 
+void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	// 나 자신이나 주인과는 충돌하지 않음
+	if (OtherActor && (OtherActor != this) && (OtherActor != GetOwner()))
+	{
+		// [확인 3] 무엇에 부딪혔는지 로그 출력
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, 
+			FString::Printf(TEXT("💥 [Bullet] Hit Actor: %s"), *OtherActor->GetName()));
+        
+		UE_LOG(LogTemp, Warning, TEXT("Bullet Hit: %s"), *OtherActor->GetName());
+
+		// [확인 4] 부딪힌 위치에 빨간 점 찍기 (3초간 유지)
+		DrawDebugSphere(GetWorld(), Hit.Location, 10.0f, 12, FColor::Red, false, 3.0f);
+
+		Destroy();
+	}
+}
