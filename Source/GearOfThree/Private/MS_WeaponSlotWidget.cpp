@@ -32,11 +32,11 @@ void UMS_WeaponSlotWidget::ApplySlotData(FMS_WeaponSlotData& InData)
 	*GetNameSafe(this), Img_icon, Txt_name);
 	
 	SlotDirection = InData.Direction;
-	if (IsValid(Img_icon) && IsValid(InData.Icon))
+	if (Img_icon && InData.Icon)
 	{
 		Img_icon->SetBrushFromTexture(InData.Icon);
 	}
-	if (IsValid(Txt_name))
+	if (Txt_name != nullptr)
 	{
 		Txt_name->SetText(InData.DisplayName);
 	}

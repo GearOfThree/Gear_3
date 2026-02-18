@@ -11,7 +11,7 @@
 /**
  * 
  */
-
+// DECLARE_MULTICAST_DELEGATE_OneParam(FOnDirectionSelected, EWeaponDirection);
 UCLASS()
 class GEAROFTHREE_API UMS_WeaponWheelWidget : public UUserWidget
 {
@@ -24,11 +24,13 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	EWeaponDirection GetSelectedDirection() const { return SelectedDirection; }
+	
+	// FOnDirectionSelected OnDirectionSelected; 
 protected:
 	virtual void NativeOnInitialized() override;
 	
 	virtual void NativeConstruct() override;
-	
+	virtual void NativeDestruct() override;
 	UPROPERTY()
 	bool bPendingRefresh = false;
 	
@@ -48,10 +50,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	EWeaponDirection SelectedDirection = EWeaponDirection::None;
 
-	UPROPERTY(meta=(BindWidgetOptional))
+	UPROPERTY(meta=(BindWidget))
 	class UMS_WeaponSlotWidget* Slot_Left = nullptr;
 	
-	UPROPERTY(meta=(BindWidgetOptional))
+	UPROPERTY(meta=(BindWidget))
 	class UMS_WeaponSlotWidget* Slot_Right = nullptr;
 	
 	

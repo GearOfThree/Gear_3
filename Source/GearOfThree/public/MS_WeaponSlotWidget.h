@@ -33,11 +33,11 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	
-	// virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void NativeOnInitialized() override;
-private:
+	
 	UFUNCTION()
 	void HandleClicked();
+private:
 	
 	
 	UPROPERTY(meta=(BindWidget))
@@ -49,6 +49,6 @@ private:
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Txt_name = nullptr;
 
-	UPROPERTY(meta=(BindWidgetOptional))
+	UPROPERTY(meta=(BindWidget))
 	class UBorder* Bd_BG = nullptr;
 };

@@ -57,6 +57,10 @@ AMS_Player::AMS_Player()
 	TargetSocketOffset = HipSocketOffset;
 	TargetFOV = HipFOV;
 	
+	WeaponMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComp"));
+	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("WeaponSocket")); // 손 소켓
+	WeaponMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 }
 
 void AMS_Player::BeginPlay()
@@ -373,11 +377,10 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("WeaponWheelWidgetClass=%s"), *GetNameSafe(WeaponWheelWidgetClass));
 		
-		if (!WeaponWheelWidget && WeaponWheelWidgetClass)
+		if (!IsValid(WeaponWheelWidget) && WeaponWheelWidgetClass)
 		{
 			WeaponWheelWidget = CreateWidget<UMS_WeaponWheelWidget>(playerController, WeaponWheelWidgetClass);
 		}
-		
 		
 		if (WeaponWheelWidget)
 		{
@@ -386,27 +389,34 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 			// 왼쪽
 			{
 				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun01-AR15.Gun01-AR15'"));
-				
+				UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AR-15_style_rifle/ar_15_style_rifle/StaticMeshes/ar_15_style_rifle.ar_15_style_rifle'"));
 				
 				FMS_WeaponSlotData data;
 				data.Direction = EWeaponDirection::Left;
 				data.DisplayName = FText::FromString(TEXT("AR15"));
 				data.Icon = ImageIcon;
+				data.WeaponMesh = GunMesh;
 				DataMap.Add(EWeaponDirection::Left, data);
 			}
 			
 			// 오른쪽
 			{
 				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun02-AK105.Gun02-AK105'"));
+				UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AK-105/AK105fbx.AK105fbx'"));
 				
 				FMS_WeaponSlotData data;
 				data.Direction = EWeaponDirection::Right;
 				data.DisplayName = FText::FromString(TEXT("AK105"));
 				data.Icon = ImageIcon;
+				data.WeaponMesh = GunMesh;
 				DataMap.Add(EWeaponDirection::Right, data);
 			}
 			
-			WeaponWheelWidget->AddToViewport(10);
+			WeaponSlotDataMap = DataMap;
+			if (!WeaponWheelWidget->IsInViewport())
+			{
+				WeaponWheelWidget->AddToViewport(10);
+			}
 			WeaponWheelWidget->SetSlotDataMap(DataMap);
 			UE_LOG(LogTemp, Warning, TEXT("AddedToViewport"));
 			
@@ -446,29 +456,42 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 
 void AMS_Player::EquipWeapon(EWeaponDirection direction)
 {
-	if (!WeaponMap.Contains(direction)) return;
+	// if (!WeaponMap.Contains(direction)) return;
 
-	AMS_Weapon* NewWeapon = WeaponMap[direction];
-	if (!NewWeapon) return;
+	// AMS_Weapon* NewWeapon = WeaponMap[direction];
+	// if (!NewWeapon) return;
+	//
+	// // 이미 장착하고 있는걸 또 선택하는 경우
+	// if (CurrentWeapon == NewWeapon)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Already equipped %s"), *GetNameSafe(NewWeapon));
+	// 	return;
+	// }
+	//
+	// if(CurrentWeapon)
+	// {
+	// 	CurrentWeapon->SetActorHiddenInGame(true);
+	// }
+	//
+	// NewWeapon->SetActorHiddenInGame(false);
+	// NewWeapon->AttachToComponent(
+	// 	GetMesh(),
+	// 	FAttachmentTransformRules::SnapToTargetIncludingScale,
+	// 	TEXT("WeaponSocket")	
+	// );
+	//
+	// CurrentWeapon = NewWeapon;
 	
-	// 이미 장착하고 있는걸 또 선택하는 경우
-	if (CurrentWeapon == NewWeapon)
+	if (!WeaponMeshComp) return;
+	
+	FMS_WeaponSlotData* Data = WeaponSlotDataMap.Find(direction);
+	if (!Data || !Data->WeaponMesh)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Already equipped %s"), *GetNameSafe(NewWeapon));
+		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon failed. Dir=%d Mesh=%s"),
+			(int32)direction, *GetNameSafe(Data ? Data->WeaponMesh : nullptr));
 		return;
 	}
 	
-	if(CurrentWeapon)
-	{
-		CurrentWeapon->SetActorHiddenInGame(true);
-	}
-	
-	NewWeapon->SetActorHiddenInGame(false);
-	NewWeapon->AttachToComponent(
-		GetMesh(),
-		FAttachmentTransformRules::SnapToTargetIncludingScale,
-		TEXT("WeaponSocket")	
-	);
-	
-	CurrentWeapon = NewWeapon;
+	WeaponMeshComp->SetStaticMesh(Data->WeaponMesh);
+	UE_LOG(LogTemp, Warning, TEXT("Equipped: %s"), *Data->DisplayName.ToString());
 }

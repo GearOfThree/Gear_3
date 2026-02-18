@@ -6,48 +6,13 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Button.h"
 
-// void UMS_WeaponWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-// {
-// 	Super::NativeTick(MyGeometry, InDeltaTime);
-// 	
-// 	FVector2D MousePos = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
-// 	FVector2D ViewportSize;
-//
-// 	if (GEngine && GEngine->GameViewport)
-// 	{
-// 		GEngine->GameViewport->GetViewportSize(ViewportSize);
-// 	}
-//
-// 	FVector2D Center = ViewportSize * 0.5f;
-// 	FVector2D Delta = MousePos - Center;
-//
-// 	if (FMath::Abs(Delta.X) < DeadZone && FMath::Abs(Delta.Y) < DeadZone)
-// 	{
-// 		SelectedDirection = EWeaponDirection::None;
-// 		return;
-// 	}
-//
-// 	if (FMath::Abs(Delta.X) > FMath::Abs(Delta.Y))
-// 	{
-// 		SelectedDirection = (Delta.X > 0) ?
-// 			EWeaponDirection::Right :
-// 			EWeaponDirection::Left;
-// 	}
-// 	else
-// 	{
-// 		SelectedDirection = (Delta.Y > 0) ?
-// 			EWeaponDirection::Down :
-// 			EWeaponDirection::Up;
-// 	}
-// }
-
 void UMS_WeaponWheelWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
-	// 슬롯 클릭 이벤트 바인딩
-	if (Slot_Left)  Slot_Left->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
-	if (Slot_Right) Slot_Right->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
+	// // // 슬롯 클릭 이벤트 바인딩
+	// if (Slot_Left)  Slot_Left->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
+	// if (Slot_Right) Slot_Right->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
 	
 	// RefreshSlots();
 	
@@ -58,6 +23,21 @@ void UMS_WeaponWheelWidget::NativeOnInitialized()
 void UMS_WeaponWheelWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
+	// // 슬롯 클릭 이벤트 바인딩
+	if (Slot_Left)
+	{
+		Slot_Left->OnSlotClicked.RemoveAll(this);
+		Slot_Left->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
+		
+	}
+	if (Slot_Right)
+	{
+		Slot_Right->OnSlotClicked.RemoveAll(this);
+		Slot_Right->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
+		
+	}
+	
 	bReady = true;
 
 	// Construct 이후에 한 번만 처리
@@ -66,6 +46,17 @@ void UMS_WeaponWheelWidget::NativeConstruct()
 		RefreshSlots();
 		bPendingRefresh = false;
 	}
+}
+
+void UMS_WeaponWheelWidget::NativeDestruct()
+{
+	if (Slot_Left)  Slot_Left->OnSlotClicked.RemoveAll(this);
+	if (Slot_Right) Slot_Right->OnSlotClicked.RemoveAll(this);
+
+	bReady = false;
+	bPendingRefresh = false;
+
+	Super::NativeDestruct();
 }
 
 void UMS_WeaponWheelWidget::SetSlotDataMap(const TMap<EWeaponDirection, FMS_WeaponSlotData>& InMap)
@@ -85,6 +76,8 @@ void UMS_WeaponWheelWidget::HandleSlotClicked(EWeaponDirection Dir)
 	SelectedDirection = Dir;
 	RefreshSlots(); // 하이라이트 갱신
 	
+	// "클릭 즉시 교체"를 원하면 아래도 켜면 됨
+	// OnDirectionSelected.Broadcast(Dir);
 	UE_LOG(LogTemp, Warning, TEXT("Slot clicked Dir=%d"), (int32)Dir);
 }
 

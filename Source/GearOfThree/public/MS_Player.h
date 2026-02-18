@@ -125,20 +125,8 @@ protected:
 	
 protected: // 무기 관련 내용
 	
-	// UPROPERTY(EditAnywhere, Category="Weapon")
-	// TArray<TSubclassOf<class AMS_Weapon>> WeaponClasses;
-	//
-	// UPROPERTY(VisibleAnywhere, Category="Weapon")
-	// int32 CurrentWeaponIndex = 0;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<AMS_Weapon> CurrentWeapon;
-	
-	// UPROPERTY(EditAnywhere)
-	// TSubclassOf<AMS_Weapon> StarterWeaponClass;
-	
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
-	// TArray<FMS_WeaponSlot> WeaponSlots;
 
 	bool bSlotOpen = false;
 	
@@ -149,18 +137,17 @@ protected: // 무기 관련 내용
 	UPROPERTY(Transient)
 	UMS_WeaponWheelWidget* WeaponWheelWidget = nullptr;
 	
-	// 현재 선택 인덱스(위젯이 업데이트하거나, 캐릭터가 계산)
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI|WeaponWheel")
-	// int32 SelectedWheelIndex = INDEX_NONE;
-	
 	UPROPERTY(EditDefaultsOnly, Category="weapon")
 	TMap<EWeaponDirection, TSubclassOf<AMS_Weapon>> WeaponClassMap;
 	
-	// TMap<EWeaponDirection, AMS_Weapon*> WeaponMap;
 	UPROPERTY(Transient)
 	TMap<EWeaponDirection, TObjectPtr<AMS_Weapon>> WeaponMap;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* WeaponMeshComp;
 	
+	UPROPERTY()
+	TMap<EWeaponDirection, FMS_WeaponSlotData> WeaponSlotDataMap;
 public:
 
 	// 생성자
