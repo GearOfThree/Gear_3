@@ -7,8 +7,8 @@
 #include "Logging/LogMacros.h"
 #include "InputMappingContext.h"
 #include "MS_Weapon.h"
-#include "MS_WeaponSlot.h"
-#include "MS_WeaponWidget.h"
+#include "MS_WeaponWheelWidget.h"
+#include "WeaponDirection.h"
 #include "MS_Player.generated.h"
 
 class USpringArmComponent;
@@ -134,8 +134,8 @@ protected: // 무기 관련 내용
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<AMS_Weapon> CurrentWeapon;
 	
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AMS_Weapon> StarterWeaponClass;
+	// UPROPERTY(EditAnywhere)
+	// TSubclassOf<AMS_Weapon> StarterWeaponClass;
 	
 	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon")
 	// TArray<FMS_WeaponSlot> WeaponSlots;
@@ -147,17 +147,19 @@ protected: // 무기 관련 내용
 	
 	// 생성된 위젯 인스턴스 캐시
 	UPROPERTY(Transient)
-	UMS_WeaponWidget* WeaponWheelWidget = nullptr;
+	UMS_WeaponWheelWidget* WeaponWheelWidget = nullptr;
 	
 	// 현재 선택 인덱스(위젯이 업데이트하거나, 캐릭터가 계산)
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI|WeaponWheel")
 	// int32 SelectedWheelIndex = INDEX_NONE;
 	
-	UPROPERTY(EditAnywhere)
-	TMap<EWeaponDirection, AMS_Weapon*> WeaponMap;
+	UPROPERTY(EditDefaultsOnly, Category="weapon")
+	TMap<EWeaponDirection, TSubclassOf<AMS_Weapon>> WeaponClassMap;
 	
-	UPROPERTY()
-	AActor* CurrentWeaponTEST;
+	// TMap<EWeaponDirection, AMS_Weapon*> WeaponMap;
+	UPROPERTY(Transient)
+	TMap<EWeaponDirection, TObjectPtr<AMS_Weapon>> WeaponMap;
+
 	
 public:
 

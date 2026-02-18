@@ -1,5 +1,6 @@
 #pragma once
-
+#include "CoreMinimal.h"
+#include "WeaponDirection.generated.h"
 
 UENUM(BlueprintType)
 enum class EWeaponDirection : uint8

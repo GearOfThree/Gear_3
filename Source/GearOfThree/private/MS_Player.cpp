@@ -12,8 +12,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
+#include "AnimNodes/AnimNode_RandomPlayer.h"
 #include "Blueprint/UserWidget.h"
 #include "public/MS_PlayerController.h"
+#include "public/MS_WeaponWheelWidget.h"
 #include "public/MS_Weapon.h"
 #include "Tools/UEdMode.h"
 
@@ -73,15 +75,54 @@ void AMS_Player::BeginPlay()
 		}
 	}
 	
-	if (StarterWeaponClass)
+	// 무기 스폰 방식 1
+	// if (StarterWeaponClass)
+	// {
+	// 	CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(StarterWeaponClass);
+	//
+	// 	CurrentWeapon->AttachToComponent(
+	// 		GetMesh(),
+	// 		FAttachmentTransformRules::SnapToTargetIncludingScale,
+	// 		TEXT("WeaponSocket")
+	// 	);
+	// }
+	
+	// 무기 스폰 방식 2
+	for (const auto& Pair : WeaponClassMap)
 	{
-		CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(StarterWeaponClass);
+		const EWeaponDirection direction = Pair.Key;
+		TSubclassOf<AMS_Weapon> WeaponClass = Pair.Value;
+		
+		// 클래스 확인
+		if (!WeaponClass) continue;
+		
+		AMS_Weapon* weapon = GetWorld()->SpawnActor<AMS_Weapon>(WeaponClass);
 
-		CurrentWeapon->AttachToComponent(
+		// 호출 확인
+		if (!weapon) continue;
+		
+		weapon->SetOwner(this);
+		weapon->SetActorHiddenInGame(true);
+		weapon->SetActorEnableCollision(false);
+		
+		// 소켓에 모두 붙여놓고 숨겨 놓는다.
+		weapon->AttachToComponent(
 			GetMesh(),
 			FAttachmentTransformRules::SnapToTargetIncludingScale,
 			TEXT("WeaponSocket")
 		);
+		
+		// 일단 다 넣어 놓기
+		WeaponMap.Add(direction, weapon);
+	}
+	
+	
+	
+	
+	// 시작 무기 선택
+	if (WeaponMap.Contains(EWeaponDirection::Left))
+	{
+		EquipWeapon(EWeaponDirection::Left);
 	}
 }
 
@@ -160,20 +201,20 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 }
 
 // 무기 교체
-void AMS_Player::ChangeWeapon(TSubclassOf<AMS_Weapon> NewWeaponClass)
-{
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->Destroy();
-	}
-
-	CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(NewWeaponClass);
-
-	CurrentWeapon->AttachToComponent(
-		GetMesh(),
-		FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("WeaponSocket")
-	);
-}
+// void AMS_Player::ChangeWeapon(TSubclassOf<AMS_Weapon> NewWeaponClass)
+// {
+// 	if (CurrentWeapon)
+// 	{
+// 		CurrentWeapon->Destroy();
+// 	}
+//
+// 	CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(NewWeaponClass);
+//
+// 	CurrentWeapon->AttachToComponent(
+// 		GetMesh(),
+// 		FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("WeaponSocket")
+// 	);
+// }
 
 void AMS_Player::Move(const FInputActionValue& Value)
 {
@@ -334,15 +375,39 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 		
 		if (!WeaponWheelWidget && WeaponWheelWidgetClass)
 		{
-			// WeaponWheelWidget = CreateWidget<UMS_WeaponWidget>(GetWorld(), WeaponWheelWidgetClass);
-			WeaponWheelWidget = CreateWidget<UMS_WeaponWidget>(playerController, WeaponWheelWidgetClass);
-			UE_LOG(LogTemp, Warning, TEXT("CreateWidget => %s"), *GetNameSafe(WeaponWheelWidget));
+			WeaponWheelWidget = CreateWidget<UMS_WeaponWheelWidget>(playerController, WeaponWheelWidgetClass);
 		}
 		
 		
 		if (WeaponWheelWidget)
 		{
+			TMap<EWeaponDirection, FMS_WeaponSlotData> DataMap;
+			
+			// 왼쪽
+			{
+				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun01-AR15.Gun01-AR15'"));
+				
+				
+				FMS_WeaponSlotData data;
+				data.Direction = EWeaponDirection::Left;
+				data.DisplayName = FText::FromString(TEXT("AR15"));
+				data.Icon = ImageIcon;
+				DataMap.Add(EWeaponDirection::Left, data);
+			}
+			
+			// 오른쪽
+			{
+				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun02-AK105.Gun02-AK105'"));
+				
+				FMS_WeaponSlotData data;
+				data.Direction = EWeaponDirection::Right;
+				data.DisplayName = FText::FromString(TEXT("AK105"));
+				data.Icon = ImageIcon;
+				DataMap.Add(EWeaponDirection::Right, data);
+			}
+			
 			WeaponWheelWidget->AddToViewport(10);
+			WeaponWheelWidget->SetSlotDataMap(DataMap);
 			UE_LOG(LogTemp, Warning, TEXT("AddedToViewport"));
 			
 			AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController());
@@ -354,6 +419,8 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 				PlayerController->SetInputMode(Mode);
 				PlayerController->SetIgnoreLookInput(true);
 			}
+			
+			
 			
 		}
 	}
@@ -370,6 +437,9 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 			PlayerController->SetInputMode(FInputModeGameOnly());
 			PlayerController->SetIgnoreLookInput(false);
 		}
+		
+		UE_LOG(LogTemp, Warning, TEXT("Wheel Direction = %d"), (int32)Direction);
+		UE_LOG(LogTemp, Warning, TEXT("SelectedDirection=%d"), (int32)Direction);
 		EquipWeapon(Direction);
 	}
 }
@@ -380,6 +450,13 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 
 	AMS_Weapon* NewWeapon = WeaponMap[direction];
 	if (!NewWeapon) return;
+	
+	// 이미 장착하고 있는걸 또 선택하는 경우
+	if (CurrentWeapon == NewWeapon)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Already equipped %s"), *GetNameSafe(NewWeapon));
+		return;
+	}
 	
 	if(CurrentWeapon)
 	{
