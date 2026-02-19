@@ -125,9 +125,6 @@ protected:
 	
 protected: // 무기 관련 내용
 	
-	UPROPERTY(Transient)
-	TMap<EWeaponDirection, TObjectPtr<AMS_Weapon>> FirstWeaponSpawn;
-	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<AMS_Weapon> CurrentWeaponRef = nullptr;
 
@@ -198,6 +195,8 @@ protected:
 	void ShowWeaponWheelUI(bool bShow);
 	
 	void EquipWeapon(EWeaponDirection direction);
+	
+	void FirstWeaponSpawn(EWeaponDirection direction);
 	
 public:
 
