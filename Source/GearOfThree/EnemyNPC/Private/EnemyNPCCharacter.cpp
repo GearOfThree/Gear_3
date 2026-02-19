@@ -18,7 +18,7 @@
 AEnemyNPCCharacter::AEnemyNPCCharacter()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 75.0f);
+	GetCapsuleComponent()->InitCapsuleSize(40.f, 120.0f);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -57,6 +57,7 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	SionMesh->SetupAttachment(GetMesh()); // 부모 Mesh 밑에 부착
 	
 	GetMesh()->SetWorldLocationAndRotation(FVector(0,0,-90),FRotator(0,-90,0));
+	GetMesh()->SetRelativeScale3D(FVector(1.6f));
 	
 	// 1. 컴포넌트 생성 (CreateDefaultSubobject)
 	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));

@@ -16,7 +16,7 @@ struct GEAROFTHREE_API FSTT_EnemyFireInstanceData
 	// [설정] 추격 정지 거리(500)보다 조금 더 길게 잡으세요 (예: 600)
 	// 그래야 경계선에서 버벅거리지 않습니다.
 	UPROPERTY(EditAnywhere, Category = "Parameter")
-	float AttackRange = 600.0f; 
+	float AttackRange = 1400.0f; 
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float FireInterval = 0.5f; // 연사 속도

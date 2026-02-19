@@ -4,6 +4,7 @@
 #include "GameFramework/Controller.h"
 #include "AIController.h"
 #include "NPCCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 
@@ -25,9 +26,16 @@ EStateTreeRunStatus FSTT_EnemyChase::EnterState(FStateTreeExecutionContext& Cont
 	//플레이어가 아니라, StateTree에서 바인딩해 준 'TargetActor'를 가져옵니다.
 	AActor* Target = InstanceData.TargetActor; 
 
-	// AI 컨트롤러와 타겟이 정상적으로 존재한다면?
 	if (AIC && Target)
 	{
+		// ▼ [추가된 핵심 코드] 이전 상태의 조준(시선 고정)을 풀어줍니다!
+		AIC->ClearFocus(EAIFocusPriority::Gameplay);
+		Owner->bUseControllerRotationYaw = false; 
+		if (Owner->GetCharacterMovement())
+		{
+			Owner->GetCharacterMovement()->bOrientRotationToMovement = true; // 이동하는 방향 쳐다보기
+		}
+
 		// 타겟을 향해 이동 명령!
 		AIC->MoveToActor(Target, InstanceData.AttackRange * 0.8f);
 		return EStateTreeRunStatus::Running;

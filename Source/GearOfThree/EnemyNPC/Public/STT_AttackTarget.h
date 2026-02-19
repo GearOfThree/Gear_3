@@ -10,11 +10,11 @@ struct GEAROFTHREE_API FSTT_AttackTargetInstanceData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	float FireRate = 0.5f; // 발사 간격
+	float FireRate = 0.3f; // 발사 간격
 	
 	// 이 거리보다 멀어지면 쫓아감.
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	float AttackRange = 800.0f; 
+	float AttackRange = 1000.0f; 
 
 	float LastFireTime = 0.0f;
 };

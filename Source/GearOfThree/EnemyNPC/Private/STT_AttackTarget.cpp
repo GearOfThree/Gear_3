@@ -16,13 +16,13 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
 	AAIController* AIC = Cast<AAIController>(Owner->GetController());
 	AActor* Target = Owner->GetCurrentTarget();
 
-	// 타겟이 없거나 죽었으면 태스크 종료 (Transition이 처리하겠지만 안전장치)
+	// 타겟이 없거나 죽었으면 태스크 종료
 	if (!AIC || !Target) return EStateTreeRunStatus::Succeeded;
 
-	// 1. 거리 계산
+	// 거리 계산
 	float DistanceToTarget = Owner->GetDistanceTo(Target);
 
-	// 2. [상황 A] 적이 사거리보다 멀리 있다? -> "추격 모드"
+	// 적이 사거리보다 멀리 있다? -> "추격 모드"
 	if (DistanceToTarget > InstanceData.AttackRange)
 	{
 		// 적을 향해 이동 (AttackRange의 90% 지점까지만 이동해서 멈추도록 설정)
@@ -33,7 +33,7 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
 		if (Owner->GetCharacterMovement())
 			Owner->GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
-	// 3. [상황 B] 적이 사거리 안에 들어왔다? -> "사격 모드"
+	// 적이 사거리 안에 들어왔다? -> "사격 모드"
 	else
 	{
 		// 이동 멈춰! (미세하게 움직이는 것 방지)
