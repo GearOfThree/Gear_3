@@ -125,6 +125,9 @@ protected:
 	
 protected: // 무기 관련 내용
 	
+	UPROPERTY(Transient)
+	TMap<EWeaponDirection, TObjectPtr<AMS_Weapon>> FirstWeaponSpawn;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<AMS_Weapon> CurrentWeaponRef = nullptr;
 
@@ -144,7 +147,7 @@ protected: // 무기 관련 내용
 	TMap<EWeaponDirection, TObjectPtr<AMS_Weapon>> WeaponMap;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* WeaponMeshComp;
+	USkeletalMeshComponent* WeaponMeshComp;
 	
 	UPROPERTY()
 	TMap<EWeaponDirection, FMS_WeaponSlotData> WeaponSlotDataMap;

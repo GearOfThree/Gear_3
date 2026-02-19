@@ -15,7 +15,7 @@ AMS_Weapon::AMS_Weapon()
 	// Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	// SetRootComponent(Root);
 	
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	SetRootComponent(WeaponMesh);
 	
 }

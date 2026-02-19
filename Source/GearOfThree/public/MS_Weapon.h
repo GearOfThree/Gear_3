@@ -29,8 +29,8 @@ protected:
 	TObjectPtr<USceneComponent> Root;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
-	// TObjectPtr<UStaticMeshComponent> WeaponMesh;
-	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+	TObjectPtr<UStaticMeshComponent> WeaponMesh;
+	// TObjectPtr<USkeletalMeshComponent> WeaponMesh;
 	
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AMS_Weapon>> WeaponInventory;
@@ -39,5 +39,5 @@ protected:
 	
 public:
 	UFUNCTION(BlueprintPure, Category="Weapon")
-	USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	UStaticMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 };

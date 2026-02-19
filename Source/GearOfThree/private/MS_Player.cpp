@@ -57,7 +57,7 @@ AMS_Player::AMS_Player()
 	TargetSocketOffset = HipSocketOffset;
 	TargetFOV = HipFOV;
 	
-	WeaponMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComp"));
+	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComp"));
 	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("WeaponSocket")); // 손 소켓
 	WeaponMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
@@ -65,6 +65,7 @@ AMS_Player::AMS_Player()
 
 void AMS_Player::BeginPlay()
 {
+	UE_LOG(LogTemp, Warning, TEXT("AMS_Player BeginPlay"));
 	Super::BeginPlay();
 	
 	if (AMS_PlayerController* player = Cast<AMS_PlayerController>(GetController()))
@@ -82,9 +83,9 @@ void AMS_Player::BeginPlay()
 	// 무기 스폰 방식 1
 	// if (StarterWeaponClass)
 	// {
-	// 	CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(StarterWeaponClass);
+	// 	CurrentWeaponRef = GetWorld()->SpawnActor<AMS_Weapon>(StarterWeaponClass);
 	//
-	// 	CurrentWeapon->AttachToComponent(
+	// 	CurrentWeaponRef->AttachToComponent(
 	// 		GetMesh(),
 	// 		FAttachmentTransformRules::SnapToTargetIncludingScale,
 	// 		TEXT("WeaponSocket")
@@ -92,42 +93,81 @@ void AMS_Player::BeginPlay()
 	// }
 	
 	// 무기 스폰 방식 2
-	for (const auto& Pair : WeaponClassMap)
-	{
-		const EWeaponDirection direction = Pair.Key;
-		TSubclassOf<AMS_Weapon> WeaponClass = Pair.Value;
-		
-		// 클래스 확인
-		if (!WeaponClass) continue;
-		
-		AMS_Weapon* weapon = GetWorld()->SpawnActor<AMS_Weapon>(WeaponClass);
-
-		// 호출 확인
-		if (!weapon) continue;
-		
-		weapon->SetOwner(this);
-		weapon->SetActorHiddenInGame(true);
-		weapon->SetActorEnableCollision(false);
-		
-		// 소켓에 모두 붙여놓고 숨겨 놓는다.
-		weapon->AttachToComponent(
-			GetMesh(),
-			FAttachmentTransformRules::SnapToTargetIncludingScale,
-			TEXT("WeaponSocket")
-		);
-		
-		// 일단 다 넣어 놓기
-		WeaponMap.Add(direction, weapon);
-	}
+	// for (const auto& Pair : WeaponClassMap)
+	// {
+	// 	const EWeaponDirection direction = Pair.Key;
+	// 	TSubclassOf<AMS_Weapon> WeaponClass = Pair.Value;
+	// 	
+	// 	// 클래스 확인
+	// 	if (!WeaponClass) continue;
+	// 	
+	// 	AMS_Weapon* weapon = GetWorld()->SpawnActor<AMS_Weapon>(WeaponClass);
+	//
+	// 	// 호출 확인
+	// 	if (!weapon) continue;
+	// 	
+	// 	weapon->SetOwner(this);
+	// 	weapon->SetActorHiddenInGame(true);
+	// 	weapon->SetActorEnableCollision(false);
+	// 	
+	// 	// 소켓에 모두 붙여놓고 숨겨 놓는다.
+	// 	weapon->AttachToComponent(
+	// 		GetMesh(),
+	// 		FAttachmentTransformRules::SnapToTargetIncludingScale,
+	// 		TEXT("WeaponSocket")
+	// 	);
+	// 	
+	// 	// 일단 다 넣어 놓기
+	// 	WeaponMap.Add(direction, weapon);
+	// }
 	
 	
-	
-	
+	// UE_LOG(LogTemp, Warning, TEXT("WeaponMap Size: %d"), WeaponMap.Num());
+	//
+	// for (const TPair<EWeaponDirection, TObjectPtr<AMS_Weapon>>& Pair : WeaponMap)
+	// {
+	// 	const EWeaponDirection Direction = Pair.Key;
+	// 	const AMS_Weapon* Weapon = Pair.Value;
+	//
+	// 	UE_LOG(LogTemp, Warning, TEXT("Key: %d, Weapon: %s"),
+	// 		static_cast<int32>(Direction),
+	// 		*GetNameSafe(Weapon));
+	// }
 	// 시작 무기 선택
 	if (WeaponMap.Contains(EWeaponDirection::Left))
 	{
 		EquipWeapon(EWeaponDirection::Left);
 	}
+		EquipWeapon(EWeaponDirection::Left);
+	
+	// UE_LOG(LogTemp, Warning, TEXT("AMS_Player EquipWeapon called"));
+	// EquipWeapon(EWeaponDirection::Left);
+	
+	// TMap<EWeaponDirection, FMS_WeaponSlotData> DataMap;
+	// 		
+	// // 왼쪽
+	// {
+	// 	UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun01-AR15.Gun01-AR15'"));
+	// 	// UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AR-15_style_rifle/ar_15_style_rifle/StaticMeshes/ar_15_style_rifle.ar_15_style_rifle'"));
+	// 			
+	// 	FMS_WeaponSlotData data;
+	// 	data.Direction = EWeaponDirection::Left;
+	// 	data.DisplayName = FText::FromString(TEXT("AR15"));
+	// 	data.Icon = ImageIcon;
+	// 	data.WeaponClass = AR15WeaponClass;
+	// 	DataMap.Add(EWeaponDirection::Left, data);
+	// }
+	
+	// USkeletalMeshComponent* MeshComp = GetMesh();
+	// static const FName WeaponSocketName(TEXT("WeaponSocket")); 
+	// CurrentWeaponRef->AttachToComponent(
+	// 	MeshComp,
+	// 	FAttachmentTransformRules::SnapToTargetIncludingScale,
+	// 	WeaponSocketName
+	// );
+	
+	
+	
 }
 
 void AMS_Player::Tick(float DeltaTime)
@@ -203,22 +243,6 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		UE_LOG(LogGearOfThree, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
 }
-
-// 무기 교체
-// void AMS_Player::ChangeWeapon(TSubclassOf<AMS_Weapon> NewWeaponClass)
-// {
-// 	if (CurrentWeapon)
-// 	{
-// 		CurrentWeapon->Destroy();
-// 	}
-//
-// 	CurrentWeapon = GetWorld()->SpawnActor<AMS_Weapon>(NewWeaponClass);
-//
-// 	CurrentWeapon->AttachToComponent(
-// 		GetMesh(),
-// 		FAttachmentTransformRules::SnapToTargetIncludingScale,TEXT("WeaponSocket")
-// 	);
-// }
 
 void AMS_Player::Move(const FInputActionValue& Value)
 {
@@ -456,35 +480,12 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 
 void AMS_Player::EquipWeapon(EWeaponDirection direction)
 {
-	// if (!WeaponMap.Contains(direction)) return;
-
-	// AMS_Weapon* NewWeapon = WeaponMap[direction];
-	// if (!NewWeapon) return;
-	//
-	// // 이미 장착하고 있는걸 또 선택하는 경우
-	// if (CurrentWeapon == NewWeapon)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Already equipped %s"), *GetNameSafe(NewWeapon));
-	// 	return;
-	// }
-	//
-	// if(CurrentWeapon)
-	// {
-	// 	CurrentWeapon->SetActorHiddenInGame(true);
-	// }
-	//
-	// NewWeapon->SetActorHiddenInGame(false);
-	// NewWeapon->AttachToComponent(
-	// 	GetMesh(),
-	// 	FAttachmentTransformRules::SnapToTargetIncludingScale,
-	// 	TEXT("WeaponSocket")	
-	// );
-	//
-	// CurrentWeapon = NewWeapon;
-	
 	if (!WeaponMeshComp) return;
 	
 	FMS_WeaponSlotData* Data = WeaponSlotDataMap.Find(direction);
+	UE_LOG(LogTemp, Warning, TEXT("EquipWeapon successed. Dir=%d Mesh=%s"),
+			(int32)direction, *GetNameSafe(Data ? Data->WeaponClass : nullptr));
+	
 	if (!Data || !Data->WeaponClass)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon failed. Dir=%d Mesh=%s"),
@@ -492,7 +493,7 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 		return;
 	}
 	
-	// WeaponMeshComp->SetStaticMesh(Data->WeaponMesh);
+	// WeaponMeshComp->SetSkeletalMesh(Data->WeaponMesh);
 	// UE_LOG(LogTemp, Warning, TEXT("Equipped: %s"), *Data->DisplayName.ToString());
 	
 	// 기존 무기 제거 
@@ -506,8 +507,10 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	FActorSpawnParameters Params;
 	Params.Owner = this;
 	Params.Instigator = GetInstigator();
-
+	
 	CurrentWeaponRef = GetWorld()->SpawnActor<AMS_Weapon>(Data->WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, Params);
+	UE_LOG(LogTemp, Warning, TEXT("EquipWeapon successed. Dir=%d CurrentWeaponRef=%s"),
+			(int32)direction, *GetNameSafe(CurrentWeaponRef));
 	if (!IsValid(CurrentWeaponRef))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Spawn failed"));
@@ -516,7 +519,6 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	
 	// 손 소켓에 부착
 	USkeletalMeshComponent* MeshComp = GetMesh();
-	// UStaticMeshComponent* MeshComp = CurrentWeapon->GetWeaponMesh();
 	static const FName WeaponSocketName(TEXT("WeaponSocket")); 
 	CurrentWeaponRef->AttachToComponent(
 		MeshComp,

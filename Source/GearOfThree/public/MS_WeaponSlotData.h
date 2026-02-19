@@ -27,6 +27,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> WeaponClass;
 	
-	// 손 위치도 저장!!
-	
 };
