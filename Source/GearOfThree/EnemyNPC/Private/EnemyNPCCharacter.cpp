@@ -11,12 +11,14 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
+#include "SawGunActor.h"
+#include "WeaponComponent.h"
 
 // Sets default values
 AEnemyNPCCharacter::AEnemyNPCCharacter()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 75.0f);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -47,9 +49,49 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	//이 위까지는 ThirdPorson 기본 설정
+	
+	// 새로운 Skeletal Mesh 컴포넌트 생성 및 부착
+	// 이름은 구분하기 쉽게 'SionMesh' 등으로 설정합니다.
+	SionMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SionMesh"));
+	SionMesh->SetupAttachment(GetMesh()); // 부모 Mesh 밑에 부착
+	
+	GetMesh()->SetWorldLocationAndRotation(FVector(0,0,-90),FRotator(0,-90,0));
+	
+	// 1. 컴포넌트 생성 (CreateDefaultSubobject)
+	WeaponComponent = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+	
+	// 사이언 전용 설정
+	TeamSide = ETeamSide::Enemy; // 팀을 Enemy로 설정
+	MaxAmmo = 10;                // 사이언의 탄창 설정
 }
+
+void AEnemyNPCCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(IMC_EnemyNPC, 0);
+		}
+	}
+	
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(IMC_EnemyNPCLook, 0);
+		}
+	}
+	
+	if (WeaponComponent && StartingWeaponClass)
+	{
+		WeaponComponent->EquipWeapon(StartingWeaponClass, FName("weapon_socket"));
+	}
+}
+
 void AEnemyNPCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
@@ -61,6 +103,9 @@ void AEnemyNPCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AEnemyNPCCharacter::Look);
+		
+		// Fire
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AEnemyNPCCharacter::FireSawBlade);
 	}
 	else
 	{
@@ -113,5 +158,14 @@ void AEnemyNPCCharacter::DoLook(float Yaw, float Pitch)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(Yaw);
 		AddControllerPitchInput(Pitch);
+	}
+}
+
+void AEnemyNPCCharacter::FireSawBlade(const FInputActionValue& Value)
+{
+	if (WeaponComponent)
+	{
+		// WeaponComponent -> SawGun -> Projectile Spawn 순으로 실행됨
+		WeaponComponent->Fire();
 	}
 }
