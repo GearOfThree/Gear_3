@@ -496,10 +496,10 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	// UE_LOG(LogTemp, Warning, TEXT("Equipped: %s"), *Data->DisplayName.ToString());
 	
 	// 기존 무기 제거 
-	if (IsValid(CurrentWeapon))
+	if (IsValid(CurrentWeaponRef))
 	{
-		CurrentWeapon->Destroy();
-		CurrentWeapon = nullptr;
+		CurrentWeaponRef->Destroy();
+		CurrentWeaponRef = nullptr;
 	}
 	
 	// 새 무기 스폰 
@@ -507,8 +507,8 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	Params.Owner = this;
 	Params.Instigator = GetInstigator();
 
-	CurrentWeapon = GetWorld()->SpawnActor<AActor>(Data->WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, Params);
-	if (!IsValid(CurrentWeapon))
+	CurrentWeaponRef = GetWorld()->SpawnActor<AMS_Weapon>(Data->WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, Params);
+	if (!IsValid(CurrentWeaponRef))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("EquipWeapon: Spawn failed"));
 		return;
@@ -516,8 +516,9 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	
 	// 손 소켓에 부착
 	USkeletalMeshComponent* MeshComp = GetMesh();
-	static const FName WeaponSocketName(TEXT("WeaponSocket")); // 네 소켓명으로
-	CurrentWeapon->AttachToComponent(
+	// UStaticMeshComponent* MeshComp = CurrentWeapon->GetWeaponMesh();
+	static const FName WeaponSocketName(TEXT("WeaponSocket")); 
+	CurrentWeaponRef->AttachToComponent(
 		MeshComp,
 		FAttachmentTransformRules::SnapToTargetIncludingScale,
 		WeaponSocketName

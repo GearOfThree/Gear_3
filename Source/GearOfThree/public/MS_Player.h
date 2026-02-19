@@ -126,7 +126,7 @@ protected:
 protected: // 무기 관련 내용
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
-	AActor* CurrentWeapon = nullptr;
+	TObjectPtr<AMS_Weapon> CurrentWeaponRef = nullptr;
 
 	bool bSlotOpen = false;
 	

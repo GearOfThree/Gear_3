@@ -3,16 +3,19 @@
 
 #include "MS_Weapon.h"
 
+#include "MS_Player.h"
+
 // Sets default values
 AMS_Weapon::AMS_Weapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	// PrimaryActorTick.bCanEverTick = true;
+	
+	// 내 코드에서 root 는 안 만드는 것으로 한다. 
 	// Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	// SetRootComponent(Root);
 	
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	// WeaponMesh->SetupAttachment(Root);
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	SetRootComponent(WeaponMesh);
 	
 }
@@ -21,13 +24,11 @@ AMS_Weapon::AMS_Weapon()
 void AMS_Weapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void AMS_Weapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
