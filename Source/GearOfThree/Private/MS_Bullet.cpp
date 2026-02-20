@@ -30,7 +30,7 @@ AMS_Bullet::AMS_Bullet()
 	// 외관 크기 설정 
 	BodyMeshComponent->SetRelativeScale3D(FVector(0.25f));
 	
-	// 발사체 컴포넌트 
+	// 발사체의 이동을 담당할 컴포넌트 
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComponent"));
 	// movement 컴포넌트가 갱신시킬 컴포넌트 지정
 	MovementComponent->SetUpdatedComponent(CollisionComponent);

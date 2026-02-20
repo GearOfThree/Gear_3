@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MS_Bullet.h"
 #include "GameFramework/Actor.h"
 #include "MS_Weapon.generated.h"
 
@@ -25,19 +26,26 @@ public:
 	AMS_Weapon();
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
-	TObjectPtr<USceneComponent> Root;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
+	// TObjectPtr<USceneComponent> Root;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
 	TObjectPtr<UStaticMeshComponent> WeaponMesh;
 	// TObjectPtr<USkeletalMeshComponent> WeaponMesh;
 	
-	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<AMS_Weapon>> WeaponInventory;
+	UPROPERTY(EditDefaultsOnly, Category="BulletFactory")
+	TSubclassOf<AMS_Bullet> BulletFactory;
 	
-	void Fire();
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> FirePosition;
+	
+	// UPROPERTY(EditDefaultsOnly, Category="Weapon")
+	// TSubclassOf<AMS_Bullet> BulletClass;
 	
 public:
 	UFUNCTION(BlueprintPure, Category="Weapon")
 	UStaticMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	
+	// 총알 발사 처리함수
+	void Fire();
 };

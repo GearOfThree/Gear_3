@@ -57,6 +57,7 @@ AMS_Player::AMS_Player()
 	TargetSocketOffset = HipSocketOffset;
 	TargetFOV = HipFOV;
 	
+	// 총 스케레탈 메시 컴포넌트 등록
 	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComp"));
 	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("WeaponSocket")); // 손 소켓
 	WeaponMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -167,6 +168,9 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		
 		// 무기 슬롯 보이기
 		EnhancedInputComponent->BindAction(OpenWeaponSlotAction, ETriggerEvent::Started, this, &AMS_Player::ToggleWeaponSlot);
+	
+		// Fire
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AMS_Player::HandleFire);
 	}
 	else
 	{
@@ -312,12 +316,10 @@ void AMS_Player::ToggleWeaponSlot()
 	if (bSlotOpen)
 	{
 		ShowWeaponWheelUI(true);
-		
 	}
 	else
 	{
 		ShowWeaponWheelUI(false);
-		
 	}
 }
 
@@ -458,6 +460,7 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 	UE_LOG(LogTemp, Warning, TEXT("Equipped weapon: %s"), *Data->DisplayName.ToString());
 }
 
+// 첫 무기 스폰
 void AMS_Player::FirstWeaponSpawn(EWeaponDirection direction)
 {
 	if (!WeaponMeshComp) return;
@@ -494,4 +497,13 @@ void AMS_Player::FirstWeaponSpawn(EWeaponDirection direction)
 		FAttachmentTransformRules::SnapToTargetIncludingScale,
 		WeaponSocketName
 	);
+}
+
+// 중계 함수
+void AMS_Player::HandleFire()
+{
+	if (CurrentWeaponRef)
+	{
+		CurrentWeaponRef->Fire();
+	}
 }

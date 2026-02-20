@@ -89,6 +89,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* OpenWeaponSlotAction;
 	
+	// Fire
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* FireAction;
+	
 protected:
 	// 최대 속력 값 (default 값 지정)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
@@ -154,6 +158,17 @@ protected: // 무기 관련 내용
 
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<AMS_Weapon> AK105WeaponClass;
+
+protected: // 총 발사 관련
+	
+	// 총알 공장
+	// UPROPERTY(EditDefaultsOnly, Category="BulletFactory")
+	// TSubclassOf<class AMS_Bullet> BulletFactory;
+	//
+	// // 총알 발사 처리 함수 
+	// void InputFire(const struct FInputActionValue& inputValue);
+
+
 public:
 
 	// 생성자
@@ -165,8 +180,6 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-
-	void ChangeWeapon(TSubclassOf<AMS_Weapon> NewWeaponClass);
 	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -197,7 +210,8 @@ protected:
 	void EquipWeapon(EWeaponDirection direction);
 	
 	void FirstWeaponSpawn(EWeaponDirection direction);
-	
+
+	void HandleFire();
 public:
 
 	/** Handles move inputs from either controls or UI interfaces */
