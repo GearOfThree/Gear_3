@@ -4,15 +4,14 @@
 
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "GearOfThreeTypes.h"
+#include "GearCharacter.h"
 #include "NPCCharacter.generated.h"
 
 // 클래스 전방 선언 (컴파일 속도 최적화)
 class UStateTreeComponent;
 
 UCLASS()
-class GEAROFTHREE_API ANPCCharacter : public ACharacter
+class GEAROFTHREE_API ANPCCharacter : public AGearCharacter
 {
 	GENERATED_BODY()
 
@@ -46,10 +45,6 @@ public:
 	// 이 변수는 State Tree의 Task나 Service에서 업데이트해줘야 합니다.
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "NPC | AI")
 	AActor* CurrentTargetActor;
-	
-	// --- 팀 구분 (공용 헤더의 Enum 사용) ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC | Combat")
-	ETeamSide TeamSide;
 	
 	// 주변에서 가장 가까운 적을 찾아 반환하는 함수
 	UFUNCTION(BlueprintCallable, Category = "NPC | AI")

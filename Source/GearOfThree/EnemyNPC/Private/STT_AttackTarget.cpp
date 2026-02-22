@@ -11,7 +11,7 @@ EStateTreeRunStatus FSTT_AttackTarget::EnterState(FStateTreeExecutionContext& Co
     ACharacter* Owner = Cast<ACharacter>(Context.GetOwner());
     if (!Owner) return EStateTreeRunStatus::Failed;
 
-    // 🚨 1. 물리적 브레이크 (문워크 방지) 🚨
+    // 물리적 브레이크 (문워크 방지)
     if (AAIController* AIC = Cast<AAIController>(Owner->GetController()))
     {
         AIC->StopMovement(); 
@@ -24,7 +24,7 @@ EStateTreeRunStatus FSTT_AttackTarget::EnterState(FStateTreeExecutionContext& Co
         MoveComp->bOrientRotationToMovement = false; // 뛰는 방향 쳐다보기 끄기
     }
 
-    // 🚨 2. 회전 충돌 방지 (덜덜거림 방지) 🚨
+    //2. 회전 충돌 방지 (덜덜거림 방지)
     Owner->bUseControllerRotationYaw = false; // 엔진 강제 회전 끄고, Tick에서 직접 부드럽게 회전시킴
 
     UE_LOG(LogTemp, Warning, TEXT("🔴 [STATE] Unified Battle Mode : START"));
@@ -46,7 +46,7 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
     // 1. 적과의 거리 계산
     float Distance = Owner->GetDistanceTo(Target);
 
-    // 2. [추격 모드] 사거리 밖이면 적을 향해 뛰어갑니다!
+    // 사거리 밖이면 적을 향해 뛰어갑니다!
     if (Distance > InstanceData.AttackRange)
     {
         AIC->MoveToActor(Target, InstanceData.AttackRange * 0.8f); // 사거리 안쪽까지 접근
@@ -55,7 +55,7 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
         MoveComp->bOrientRotationToMovement = true; // 뛰는 방향 쳐다보기
         AIC->ClearFocus(EAIFocusPriority::Gameplay); // 조준 풀기
     }
-    // 3. [사격 모드] 사거리 안에 들어오면 멈춰서 쏩니다!
+    // 사거리 안에 들어오면 멈춰서 쏩니다!
     else
     {
         // 브레이크 꽉! (문워크 방지)

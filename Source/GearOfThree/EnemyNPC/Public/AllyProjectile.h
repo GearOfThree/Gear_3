@@ -15,15 +15,15 @@ public:
 protected:
 	
 	virtual void BeginPlay() override;
-	// 1. 충돌 컴포넌트
+	// 충돌 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Collision")
 	class USphereComponent* CollisionComp;
 
-	// 2. 외형 (작은 구체나 미사일 형태)
+	// 외형 (작은 구체나 미사일 형태)
 	UPROPERTY(VisibleAnywhere, Category = "Visual")
 	class UStaticMeshComponent* ProjectileMesh;
 
-	// 3. 발사체 이동 컴포넌트 (핵심!)
+	// 발사체 이동 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category = "Movement")
 	class UProjectileMovementComponent* ProjectileMovement;
 

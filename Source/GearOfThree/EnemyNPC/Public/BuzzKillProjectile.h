@@ -23,6 +23,9 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Components")
 	UStaticMeshComponent* SawMesh;
 	
+	UPROPERTY(VisibleAnywhere, Category = "Collision")
+	class USphereComponent* CollisionComp;
+	
 	// 발사 속도 (Impulse 강도)
 	UPROPERTY(EditAnywhere, Category="Physics")
 	float LaunchPower = 4000.0f;

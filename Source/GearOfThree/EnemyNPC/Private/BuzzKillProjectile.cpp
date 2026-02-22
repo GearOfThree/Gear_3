@@ -3,33 +3,35 @@
 
 #include "BuzzKillProjectile.h"
 
-// Sets default values
+#include "GearCharacter.h"
+#include "Components/SphereComponent.h"
+
 ABuzzKillProjectile::ABuzzKillProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 1. 메쉬를 Root로 확실하게 고정!
 	SawMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SawMesh"));
 	RootComponent = SawMesh;
-	
-	//톱날이 너무 큼;;
+    
+	// 충돌체는 굳이 안 써도 되지만 쓴다면 메쉬 아래에 붙여줍니다 (SetupAttachment)
+	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	CollisionComp->InitSphereRadius(5.0f);
+	CollisionComp->SetupAttachment(RootComponent);
+	// (이후 충돌 이벤트 바인딩은 그대로 둠)
+	CollisionComp->OnComponentHit.AddDynamic(this, &ABuzzKillProjectile::OnHit); 
+    
+	// 외형 및 물리 설정 유지
 	SawMesh->SetRelativeScale3D(FVector(0.0007f));
-	//물리 시뮬레이션 활성화
 	SawMesh->SetSimulatePhysics(true);
-	//중력 적용
 	SawMesh->SetEnableGravity(false);
-	
-	// 공기 저항
 	SawMesh->SetLinearDamping(0.1f);
-	
-	//충돌 프로필 설정
+    
+	// 여기서 SawMesh에 Hit 이벤트를 켤 거면 확실하게 세팅!
 	SawMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
-	SawMesh->SetNotifyRigidBodyCollision(true);
-	
-	// 연속 충돌 감지 (CCD) 켜기 - 톱날이 벽을 뚫고 나가는 것을 방지
+	SawMesh->SetNotifyRigidBodyCollision(true); // "충돌 시 이벤트를 발생시켜라!"
 	SawMesh->BodyInstance.bUseCCD = true; 
-	
-	// 톱날이 동전처럼 옆으로 구르지 않고 수평을 유지하며 날아가게 회전 축 잠금.
+    
 	SawMesh->BodyInstance.bLockZRotation = true;
 	SawMesh->BodyInstance.bLockXRotation = true;
 	SawMesh->BodyInstance.bLockYRotation = true;
@@ -87,21 +89,9 @@ void ABuzzKillProjectile::Tick(float DeltaTime)
 	
 }
 
-void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+/*void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// 바닥 감지 및 파괴
-	// 충돌한 면의 법선(Normal)의 Z값이 0.7 이상이면 평평한 바닥으로 간주합니다.
-	// (Normal.Z가 1이면 완전 평지, 0이면 수직 벽, -1이면 천장)
-	if (Hit.ImpactNormal.Z > 0.7f)
-	{
-		// 여기에 스파크나 먼지 이펙트를 스폰
-		// UGameplayStatics::SpawnEmitterAtLocation(...);
 
-		Destroy(); // 바닥이므로 사라짐
-		return;    // 함수 종료
-	}
-
-	/*
 	 // 벽/천장 반사 (수동 계산)
 	
 	// 현재 입사 속도 (V) 가져오기
@@ -121,7 +111,18 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	// 물리 엔진에 강제 적용
 	// (물리 엔진의 기본 마찰력 계산을 무시하고 우리가 계산한 이상적인 반사각을 덮어씌웁니다)
 	SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
-	*/
+	
+	// 바닥 감지 및 파괴
+	// 충돌한 면의 법선(Normal)의 Z값이 0.7 이상이면 평평한 바닥으로 간주합니다.
+	// (Normal.Z가 1이면 완전 평지, 0이면 수직 벽, -1이면 천장)
+	if (Hit.ImpactNormal.Z > 0.7f)
+	{
+		// 여기에 스파크나 먼지 이펙트를 스폰
+		// UGameplayStatics::SpawnEmitterAtLocation(...);
+
+		Destroy(); // 바닥이므로 사라짐
+		return;    // 함수 종료
+	}
 	
 	// [수정] 2. 반사각 계산 (직접 물리 구현)
     
@@ -148,4 +149,73 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	
 	// 디버그용: 튕기는 궤적 그리기
 	DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
+}*/
+
+
+void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+    // 1. 유효성 검사 (자기 자신 충돌 방지)
+    if (!OtherActor || OtherActor == this) return;
+
+    // 캐릭터 피아 식별 및 명중 판정
+    AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
+    if (HitCharacter)
+    {
+        AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
+        
+        // 아군이거나 쏜 사람 본인이면 무시 (통과하거나 반사하지 않음)
+        if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
+        {
+            return; 
+        }
+
+        // 적군 명중! (데미지 처리 후 파괴)
+        UE_LOG(LogTemp, Warning, TEXT("🎯 [BuzzKill] 적 명중! 톱날 파괴!"));
+        
+        // TODO: 여기에 HitCharacter의 체력을 깎는 DamageSystem 호출 코드 추가 예정
+        
+        Destroy(); // 적을 맞췄으니 여기서 파괴하고 함수 종료! (아래 반사 로직 안 탐)
+        return; 
+    }
+
+	
+    // 캐릭터가 아닌 환경(바닥, 벽, 천장)에 부딪혔을 때의 기존 물리 로직
+	
+    // 바닥 감지 및 파괴
+    // 충돌한 면의 법선(Normal)의 Z값이 0.7 이상이면 평평한 바닥으로 간주합니다.
+    if (Hit.ImpactNormal.Z > 0.7f)
+    {
+       // 여기에 스파크나 먼지 이펙트를 스폰
+       // UGameplayStatics::SpawnEmitterAtLocation(...);
+
+       Destroy(); // 바닥이므로 사라짐
+       return;    // 함수 종료
+    }
+
+    // 반사각 계산 (직접 물리 구현)
+    // 현재 속도(GetPhysicsLinearVelocity) 대신 '저장한 속도(LastFrameVelocity)' 사용
+    FVector IncomingVelocity = LastFrameVelocity; 
+    FVector Normal = Hit.ImpactNormal;
+
+    // 공식: R = V - 2(V dot N)N
+    float DotProduct = FVector::DotProduct(IncomingVelocity, Normal);
+    FVector ReflectedVelocity = IncomingVelocity - (2 * DotProduct * Normal);
+
+    // 반발 계수 적용
+    ReflectedVelocity *= Bounciness;
+
+    // 3. 강제로 새 속도 할당
+    if (SawMesh) // 안전하게 Mesh가 있는지 한 번 체크
+    {
+        SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
+    }
+    
+    // (Clipping 방지)
+    // 가끔 톱날이 벽 안에 파묻혀서 못 나오는 걸 방지하기 위해 
+    // 반사 방향으로 아주 조금(1cm) 이동시킴.
+    FVector Nudge = Normal * 1.0f; 
+    SetActorLocation(GetActorLocation() + Nudge);
+    
+    // 디버그용: 튕기는 궤적 그리기
+    DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
 }

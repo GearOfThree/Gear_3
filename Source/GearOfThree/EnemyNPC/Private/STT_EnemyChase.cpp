@@ -28,7 +28,7 @@ EStateTreeRunStatus FSTT_EnemyChase::EnterState(FStateTreeExecutionContext& Cont
 
 	if (AIC && Target)
 	{
-		// ▼ [추가된 핵심 코드] 이전 상태의 조준(시선 고정)을 풀어줍니다!
+		//이전 상태의 조준(시선 고정)을 풀어줍니다
 		AIC->ClearFocus(EAIFocusPriority::Gameplay);
 		Owner->bUseControllerRotationYaw = false; 
 		if (Owner->GetCharacterMovement())
@@ -50,7 +50,7 @@ EStateTreeRunStatus FSTT_EnemyChase::Tick(FStateTreeExecutionContext& Context, c
 	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
 	AAIController* AIC = Cast<AAIController>(Owner->GetController());
 
-	// [변경] 타겟 사용
+	// 타겟 사용
 	AActor* Target = InstanceData.TargetActor; 
 
 	if (!Owner || !AIC || !Target) return EStateTreeRunStatus::Failed;

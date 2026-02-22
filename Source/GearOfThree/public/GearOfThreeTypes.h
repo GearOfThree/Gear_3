@@ -8,6 +8,7 @@
 UENUM(BlueprintType)
 enum class ETeamSide : uint8
 {
+	None	UMETA(DisplayName = "NONE"),
 	Player  UMETA(DisplayName = "Player"),
 	Enemy   UMETA(DisplayName = "Enemy"),
 	Ally	UMETA(DisplayName = "Ally")
