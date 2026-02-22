@@ -36,13 +36,13 @@ class AMS_Player : public ACharacter
 protected: // 지역변수 초기화 구역
 
 	// Aim Down Sight
-	bool bIsADS = false;
-	
-	float TargetArmLength;
-	
-	FVector TargetSocketOffset;
-	// 시야각
-	float TargetFOV;
+	// bool bIsADS = false;
+	//
+	// float TargetArmLength;
+	//
+	// FVector TargetSocketOffset;
+	// // 시야각
+	// float TargetFOV;
 	
 	
 protected:
@@ -101,31 +101,51 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
 	bool IsCrouched = false;
 	
-protected:
-	// 기본값
-	UPROPERTY(EditAnywhere, Category="ADS")
-	float HipArmLength = 300.f;
-
-	UPROPERTY(EditAnywhere, Category="ADS")
-	FVector HipSocketOffset = FVector(0.f, 0.f, 0.f);
-
-	UPROPERTY(EditAnywhere, Category="ADS")
-	float HipFOV = 120.f;
-
-	// ADS 값 (오른쪽 어깨)
-	UPROPERTY(EditAnywhere, Category="ADS")
-	float ADSArmLength = 150.f;
-
-	UPROPERTY(EditAnywhere, Category="ADS")
-	FVector ADSSocketOffset = FVector(0.f, 70.f, 60.f);
-
-	UPROPERTY(EditAnywhere, Category="ADS")
-	float ADSFOV = 65.f;
-
-	UPROPERTY(EditAnywhere, Category="ADS")
-	float InterpSpeed = 12.f;
+protected: // 초점 변경 내용
 	
-	void SetADS(bool bNewADS);
+	// 보간 속도
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float ADSInterpSpeed = 12.0f;
+	
+	// 기본 시야각
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float DefaultFOV = 90.0f;
+	
+	// 확대 느낌
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float ADSFOV = 78.0f; // 
+
+	// 클수록 캐릭터가 멀고 작게 된담
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float DefaultArmLength = 350.0f;
+	
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float ADSArmLength = 220.0f;
+
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	FVector DefaultSocketOffset = FVector(0.0f, 0.0f, 60.0f);
+	
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	FVector ADSSocketOffset = FVector(0.0f, 45.0f, 55.0f);
+	
+protected:
+	float CachedArmLength_Base = 0.f;
+	FVector CachedSocketOffset_Base = FVector::ZeroVector;
+	float CachedFOV_Base = 0.f;
+	bool bCached_Base = false;
+	
+private:
+	// 초기 상태
+	bool bWantsADS = false;
+	
+	float TargetFOV;
+	float TargetArmLength;
+	FVector TargetSocketOffset;
+	
+	// 안전하게 커모넌트/값 초기화 해두기
+	void CachedDefaults_Base();
+	
+	bool bCachedDefaults = false;
 	
 protected: // 무기 관련 내용
 	
@@ -158,16 +178,6 @@ protected: // 무기 관련 내용
 
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<AMS_Weapon> AK105WeaponClass;
-
-protected: // 총 발사 관련
-	
-	// 총알 공장
-	// UPROPERTY(EditDefaultsOnly, Category="BulletFactory")
-	// TSubclassOf<class AMS_Bullet> BulletFactory;
-	//
-	// // 총알 발사 처리 함수 
-	// void InputFire(const struct FInputActionValue& inputValue);
-
 
 public:
 

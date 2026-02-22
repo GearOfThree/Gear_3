@@ -52,10 +52,6 @@ AMS_Player::AMS_Player()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-
-	TargetArmLength = HipArmLength;
-	TargetSocketOffset = HipSocketOffset;
-	TargetFOV = HipFOV;
 	
 	// 총 스케레탈 메시 컴포넌트 등록
 	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComp"));
@@ -66,6 +62,8 @@ AMS_Player::AMS_Player()
 
 void AMS_Player::BeginPlay()
 {
+	// #################### Mapping Context 관련 ####################
+	
 	UE_LOG(LogTemp, Warning, TEXT("AMS_Player BeginPlay"));
 	Super::BeginPlay();
 	
@@ -81,6 +79,19 @@ void AMS_Player::BeginPlay()
 		}
 	}
 
+	// #################### 초점 변경 관련 ####################
+	
+	CachedDefaults_Base();
+
+	CameraBoom->TargetArmLength = DefaultArmLength;
+	CameraBoom->SocketOffset = DefaultSocketOffset;
+	FollowCamera->SetFieldOfView(DefaultFOV);
+
+	TargetArmLength = DefaultArmLength;
+	TargetSocketOffset = DefaultSocketOffset;
+	TargetFOV = DefaultFOV;
+	
+	// #################### 무기 관련 ####################
 	
 	TMap<EWeaponDirection, FMS_WeaponSlotData> DataMap;
 	
@@ -105,33 +116,18 @@ void AMS_Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	// InterpTo 을 사용하기 때문에 초점 변경되는 속도록 조절할 수 있음
-	// Arm Length 보간
-	float NewArm = FMath::FInterpTo(
-		CameraBoom->TargetArmLength,
-		TargetArmLength,
-		DeltaTime,
-		InterpSpeed
-	);
-	CameraBoom->TargetArmLength = NewArm;
+	if (!CameraBoom || !FollowCamera)
+		return;
 
-	// SocketOffset 보간
-	FVector NewOffset = FMath::VInterpTo(
-		CameraBoom->SocketOffset,
-		TargetSocketOffset,
-		DeltaTime,
-		InterpSpeed
-	);
-	CameraBoom->SocketOffset = NewOffset;
-
-	// FOV 보간
-	float NewFOV = FMath::FInterpTo(
-		FollowCamera->FieldOfView,
-		TargetFOV,
-		DeltaTime,
-		InterpSpeed
-	);
+	// 1) FOV 보간 (초점 변화 느낌의 핵심)
+	const float NewFOV = FMath::FInterpTo(FollowCamera->FieldOfView, TargetFOV, DeltaTime, ADSInterpSpeed);
 	FollowCamera->SetFieldOfView(NewFOV);
+
+	// 2) 스프링암 길이 보간 (카메라 거리)
+	CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, TargetArmLength, DeltaTime, ADSInterpSpeed);
+
+	// 3) 스프링암 소켓 오프셋 보간 (어깨 시점 이동)
+	CameraBoom->SocketOffset = FMath::VInterpTo(CameraBoom->SocketOffset, TargetSocketOffset, DeltaTime, ADSInterpSpeed);
 }
 
 
@@ -163,8 +159,9 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AMS_Player::StopCrouch);
 	
 		// ZoomIn // 토글 방식이 아닌 홀드 방식으로 설정
-		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started, this, &AMS_Player::StartADS);
+		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started,   this, &AMS_Player::StartADS);
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Completed, this, &AMS_Player::StopADS);
+		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Canceled,  this, &AMS_Player::StopADS);
 		
 		// 무기 슬롯 보이기
 		EnhancedInputComponent->BindAction(OpenWeaponSlotAction, ETriggerEvent::Started, this, &AMS_Player::ToggleWeaponSlot);
@@ -271,40 +268,49 @@ void AMS_Player::StopCrouch()
 	UnCrouch(); 
 }
 
-void AMS_Player::SetADS(bool bNewADS)
-{
-	bIsADS = bNewADS;
-
-	if (bIsADS)
-	{
-		TargetArmLength = ADSArmLength;
-		TargetSocketOffset = ADSSocketOffset;
-		TargetFOV = ADSFOV;
-
-		// 조준 중 캐릭터가 카메라 방향으로 회전
-		bUseControllerRotationYaw = true;
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-	}
-	else
-	{
-		TargetArmLength = HipArmLength;
-		TargetSocketOffset = HipSocketOffset;
-		TargetFOV = HipFOV;
-
-		bUseControllerRotationYaw = false;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-	}
-}
-
 void AMS_Player::StartADS()
 {
-	SetADS(true);
+	CachedDefaults_Base();
+
+	bWantsADS = true;
+
+	// 목표값을 ADS로
+	TargetFOV = ADSFOV;
+	TargetArmLength = ADSArmLength;
+	TargetSocketOffset = ADSSocketOffset;
+
+	// (선택) 조준 중 회전 반응을 더 즉각적으로 하고 싶다면:
+	// bUseControllerRotationYaw = true;
+	// GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void AMS_Player::StopADS()
 {
-	SetADS(false);
+	CachedDefaults_Base();
+
+	bWantsADS = false;
+
+	// 목표값을 기본으로
+	TargetFOV = DefaultFOV;
+	TargetArmLength = DefaultArmLength;
+	TargetSocketOffset = DefaultSocketOffset;
+
+	// (선택) 원복
+	// bUseControllerRotationYaw = false;
+	// GetCharacterMovement()->bOrientRotationToMovement = true;
 }
+
+void AMS_Player::CachedDefaults_Base()
+{
+	if (bCached_Base || !CameraBoom || !FollowCamera) return;
+
+	CachedArmLength_Base = CameraBoom->TargetArmLength;
+	CachedSocketOffset_Base = CameraBoom->SocketOffset;
+	CachedFOV_Base = FollowCamera->FieldOfView;
+
+	bCached_Base = true;
+}
+
 
 // ############################ 무기 선택 ############################
 
