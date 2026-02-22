@@ -1,6 +1,7 @@
 #include "AllyProjectile.h"
 
 #include "GearCharacter.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
@@ -32,6 +33,10 @@ AAllyProjectile::AAllyProjectile()
 	ProjectileMovement->ProjectileGravityScale = 0.0f;
 
 	InitialLifeSpan = 3.0f;
+	
+	// 궤적 이펙트 컴포넌트 생성 및 부착
+	TrailEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailEffectComp"));
+	TrailEffectComp->SetupAttachment(RootComponent); // 루트(충돌체)를 따라다니게 세팅
 }
 
 void AAllyProjectile::BeginPlay()
@@ -47,35 +52,35 @@ void AAllyProjectile::BeginPlay()
 
 void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// 1. 자기 자신이나 허공에 부딪힌 오류 방지
 	if (!OtherActor || OtherActor == this) return;
 
-	// 2. 누가 이 총알을 쐈는가? (Instigator: 무기 컴포넌트에서 쏠 때 넣어둔 주인 정보)
-	AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
-    
-	// 3. 맞은 대상이 캐릭터(GearCharacter)인가?
-	AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
-
-	if (Shooter && HitCharacter)
+	if (AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor)) // 캐릭터(아군 or 적군)를 맞춘 경우
 	{
-		// 쏜 사람이 자기가 쏜 총알에 맞거나(달려가면서 쏠 때), 같은 팀(아군)을 맞춘 경우
-		if (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter))
+		// 피아 식별 로직 (이전과 동일)
+		AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
+		if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
 		{
-			// 아군 통과 (총알이 안 터지고 그대로 뚫고 지나가게 합니다)
-			return; 
+			return; // 아군은 관통
 		}
 
-		// 적군을 맞췄을 때
-		UE_LOG(LogTemp, Warning, TEXT("[Hit] 적 명중 투사체 파괴"));
-        
-		// (나중에 여기에 DamageSystem을 호출해서 체력을 깎는 코드를 넣습니다)
+		// 맞은 캐릭터의 팀을 확인하고 이펙트 스폰
+		if (HitCharacter->GetTeamSide() == ETeamSide::Enemy)
+		{
+			// 적(사이언) 명중!
+			if (EnemyHitEffect) 
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EnemyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+			}
+		}
 	}
-	else
+	else // 캐릭터가 아닌 벽/바닥을 맞춘 경우
 	{
-		// 대상이 캐릭터가 아님 -> 즉, '벽'이나 '바닥' 등 배경에 맞았을 때
-		UE_LOG(LogTemp, Log, TEXT("[Hit] 벽/바닥 명중 투사체 파괴"));
+		// 벽 피격 이펙트
+		if (WallHitEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), WallHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+		}
 	}
 
-	// 아군을 맞춘 게 아니라면 (적군 or 벽에 맞았으므로) 투사체 소멸
 	Destroy(); 
 }

@@ -6,6 +6,7 @@
 #include "AllyProjectile.h"
 #include "NPCCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AAllyGunActor::AAllyGunActor()
@@ -66,4 +67,16 @@ void AAllyGunActor::Fire()
     // 스폰
     AAllyProjectile* SpawningBullet = GetWorld()->SpawnActor<AAllyProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
     
+    if (MuzzleFlashEffect && WeaponMesh)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAttached(
+            MuzzleFlashEffect,
+            WeaponMesh,             // 어디에 붙일 것인가?
+            FName("Muzzle"),  // 총구 소켓 이름
+            FVector::ZeroVector, 
+            FRotator::ZeroRotator, 
+            EAttachLocation::SnapToTarget, 
+            true                    // 붙어서 따라다닐 것인가?
+        );
+    }
 }

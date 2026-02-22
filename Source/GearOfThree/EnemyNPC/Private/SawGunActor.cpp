@@ -8,6 +8,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 ASawGunActor::ASawGunActor()
@@ -52,5 +53,18 @@ void ASawGunActor::Fire()
 	SpawnParams.Instigator = WeaponOwner;
 
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzlePos, SpawnRotation, SpawnParams);
+	
+	if (MuzzleFlashEffect && WeaponMesh)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(
+			MuzzleFlashEffect,
+			WeaponMesh,             // 어디에 붙일 것인가?
+			FName("muzzle"),  // 총구 소켓 이름
+			FVector::ZeroVector, 
+			FRotator::ZeroRotator, 
+			EAttachLocation::SnapToTarget, 
+			true                    // 붙어서 따라다닐 것인가?
+		);
+	}
 }
 

@@ -4,6 +4,7 @@
 #include "BuzzKillProjectile.h"
 
 #include "GearCharacter.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 
 ABuzzKillProjectile::ABuzzKillProjectile()
@@ -35,6 +36,10 @@ ABuzzKillProjectile::ABuzzKillProjectile()
 	SawMesh->BodyInstance.bLockZRotation = true;
 	SawMesh->BodyInstance.bLockXRotation = true;
 	SawMesh->BodyInstance.bLockYRotation = true;
+	
+	// 궤적 이펙트 컴포넌트 생성 및 부착
+	TrailEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailEffectComp"));
+	TrailEffectComp->SetupAttachment(RootComponent); // 루트(충돌체)를 따라다니게 세팅
 }
 
 // Called when the game starts or when spawned
@@ -156,66 +161,72 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 {
     // 1. 유효성 검사 (자기 자신 충돌 방지)
     if (!OtherActor || OtherActor == this) return;
-
-    // 캐릭터 피아 식별 및 명중 판정
+	
+    // 캐릭터 피아 식별 및 이펙트 처리
     AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
     if (HitCharacter)
     {
         AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
         
-        // 아군이거나 쏜 사람 본인이면 무시 (통과하거나 반사하지 않음)
+        // 아군이거나 쏜 사람 본인이면
         if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
         {
+            // [VFX] 아군 명중 이펙트 재생 (단, 쏜 본인에게서 터지는 건 방지)
+            if (Shooter != HitCharacter && AllyHitEffect)
+            {
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+            }
             return; 
         }
 
-        // 적군 명중! (데미지 처리 후 파괴)
+        // 적군 명중! 
         UE_LOG(LogTemp, Warning, TEXT("🎯 [BuzzKill] 적 명중! 톱날 파괴!"));
+        // TODO: HitCharacter 체력 깎기
         
-        // TODO: 여기에 HitCharacter의 체력을 깎는 DamageSystem 호출 코드 추가 예정
-        
-        Destroy(); // 적을 맞췄으니 여기서 파괴하고 함수 종료! (아래 반사 로직 안 탐)
+        Destroy(); 
         return; 
     }
 
-	
-    // 캐릭터가 아닌 환경(바닥, 벽, 천장)에 부딪혔을 때의 기존 물리 로직
-	
-    // 바닥 감지 및 파괴
+
+    // 환경(바닥) 충돌
     // 충돌한 면의 법선(Normal)의 Z값이 0.7 이상이면 평평한 바닥으로 간주합니다.
     if (Hit.ImpactNormal.Z > 0.7f)
     {
-       // 여기에 스파크나 먼지 이펙트를 스폰
-       // UGameplayStatics::SpawnEmitterAtLocation(...);
-
+       // 바닥에 부딪혀 파괴될 때도 스파크를 튀기게 설정
+       if (BounceSparkEffect)
+       {
+           UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+       }
        Destroy(); // 바닥이므로 사라짐
-       return;    // 함수 종료
+       return;    
+    }
+
+
+    // 벽/천장 반사 물리 및 스파크 이펙트
+    
+    // [VFX] 벽 반사 스파크 이펙트 재생
+    if (BounceSparkEffect)
+    {
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
     }
 
     // 반사각 계산 (직접 물리 구현)
-    // 현재 속도(GetPhysicsLinearVelocity) 대신 '저장한 속도(LastFrameVelocity)' 사용
     FVector IncomingVelocity = LastFrameVelocity; 
     FVector Normal = Hit.ImpactNormal;
 
-    // 공식: R = V - 2(V dot N)N
     float DotProduct = FVector::DotProduct(IncomingVelocity, Normal);
     FVector ReflectedVelocity = IncomingVelocity - (2 * DotProduct * Normal);
-
-    // 반발 계수 적용
     ReflectedVelocity *= Bounciness;
 
-    // 3. 강제로 새 속도 할당
-    if (SawMesh) // 안전하게 Mesh가 있는지 한 번 체크
+    // 강제로 새 속도 할당
+    if (SawMesh) 
     {
         SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
     }
     
     // (Clipping 방지)
-    // 가끔 톱날이 벽 안에 파묻혀서 못 나오는 걸 방지하기 위해 
-    // 반사 방향으로 아주 조금(1cm) 이동시킴.
     FVector Nudge = Normal * 1.0f; 
     SetActorLocation(GetActorLocation() + Nudge);
     
-    // 디버그용: 튕기는 궤적 그리기
     DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
 }
