@@ -38,8 +38,6 @@ void UWeaponComponent::EquipWeapon(TSubclassOf<AGearWeaponBase> WeaponClass, FNa
           SocketName
        );
         
-       UE_LOG(LogTemp, Log, TEXT("Weapon equipped to socket: %s"), *SocketName.ToString());
-       
        //새 무기를 들었으니 탄창을 꽉 채우고 장전 상태를 초기화합니다
        CurrentAmmo = MaxAmmo;
        bIsReloading = false;
@@ -68,7 +66,6 @@ void UWeaponComponent::Fire()
     // 🚨 [추가] 방금 쐈으니까 시간 기록!
     LastFireTime = CurrentTime; 
 
-    UE_LOG(LogTemp, Warning, TEXT("💥 [Weapon] BANG! (Ammo: %d / %d)"), CurrentAmmo, MaxAmmo);
 }
 
 
@@ -80,7 +77,6 @@ void UWeaponComponent::StartReload()
     if (bIsReloading) return;
 
     bIsReloading = true;
-    UE_LOG(LogTemp, Warning, TEXT("🔄 [Weapon] Reloading... (%f sec)"), ReloadTime);
 
     // ReloadTime(예: 2초)이 지나면 EndReload 함수를 1번만 실행합니다.
     GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &UWeaponComponent::EndReload, ReloadTime, false);
@@ -92,5 +88,4 @@ void UWeaponComponent::EndReload()
     CurrentAmmo = MaxAmmo;
     bIsReloading = false;
     
-    UE_LOG(LogTemp, Warning, TEXT("✅ [Weapon] Reload Complete!"));
 }

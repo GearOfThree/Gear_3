@@ -24,10 +24,8 @@ EStateTreeRunStatus FSTT_AttackTarget::EnterState(FStateTreeExecutionContext& Co
         MoveComp->bOrientRotationToMovement = false; // 뛰는 방향 쳐다보기 끄기
     }
 
-    //2. 회전 충돌 방지 (덜덜거림 방지)
     Owner->bUseControllerRotationYaw = false; // 엔진 강제 회전 끄고, Tick에서 직접 부드럽게 회전시킴
 
-    UE_LOG(LogTemp, Warning, TEXT("🔴 [STATE] Unified Battle Mode : START"));
     return EStateTreeRunStatus::Running;
 }
 

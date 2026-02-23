@@ -12,7 +12,6 @@ EStateTreeRunStatus FSTT_EnemyChase::EnterState(FStateTreeExecutionContext& Cont
 {
 	//추격 상태 진입 (시작하자마자 로그부터 찍게)
 	UE_LOG(LogTemp, Log, TEXT("🏃‍♂️ [STATE] Enter Chase State"));
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, TEXT("🏃‍♂️ [Scion] Entering Chase State"));
 
 	// 데이터 가져오기
 	const FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);

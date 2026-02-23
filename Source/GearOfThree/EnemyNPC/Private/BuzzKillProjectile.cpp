@@ -159,33 +159,38 @@ void ABuzzKillProjectile::Tick(float DeltaTime)
 
 void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    // 1. 유효성 검사 (자기 자신 충돌 방지)
+    // 유효성 검사 (자기 자신 충돌 방지)
     if (!OtherActor || OtherActor == this) return;
 	
-    // 캐릭터 피아 식별 및 이펙트 처리
-    AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
-    if (HitCharacter)
-    {
-        AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
+	// 캐릭터 피아 식별 및 이펙트 처리
+	AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
+	if (HitCharacter)
+	{
+		AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
         
-        // 아군이거나 쏜 사람 본인이면
-        if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
-        {
-            // [VFX] 아군 명중 이펙트 재생 (단, 쏜 본인에게서 터지는 건 방지)
-            if (Shooter != HitCharacter && AllyHitEffect)
-            {
-                UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-            }
-            return; 
-        }
+		// 아군이거나 쏜 사람 본인이면 무시 (관통)
+		if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
+		{
+			return; 
+		}
 
-        // 적군 명중! 
-        UE_LOG(LogTemp, Warning, TEXT("🎯 [BuzzKill] 적 명중! 톱날 파괴!"));
-        // TODO: HitCharacter 체력 깎기
-        
-        Destroy(); 
-        return; 
-    }
+		// 적대적 관계 명중 (사이언 -> 샐리, 혹은 플레이어 -> 사이언)
+		UE_LOG(LogTemp, Warning, TEXT("🎯 [BuzzKill] 유효타 명중! (Shooter: %s -> Victim: %s)"), *Shooter->GetName(), *HitCharacter->GetName());
+
+		// 맞은 대상(Victim)이 누구냐에 따라 이펙트 분기
+		if (HitCharacter->GetTeamSide() == ETeamSide::Ally || HitCharacter->GetTeamSide() == ETeamSide::Player)
+		{
+			// 샐리나 플레이어가 맞았을 때! (아군 전용 피격 이펙트)
+			if (AllyHitEffect)
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+			}
+		}
+
+		// TODO: HitCharacter 체력 깎기 로직 추가 예정
+		Destroy(); 
+		return; 
+	}
 
 
     // 환경(바닥) 충돌

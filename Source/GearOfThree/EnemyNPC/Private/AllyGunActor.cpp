@@ -35,10 +35,10 @@ void AAllyGunActor::Fire()
     ANPCCharacter* OwnerNPC = Cast<ANPCCharacter>(GetOwner());
     if (!OwnerNPC) return;
 
-    // 총구 위치 가져오기 (소켓 이름: Muzzle)
-    // 만약 Muzzle 소켓이 없으면 총의 원점(Root)에서 나갑니다.
-    FVector SpawnLocation = WeaponMesh->DoesSocketExist(FName("Muzzle")) ? 
-                            WeaponMesh->GetSocketLocation(FName("Muzzle")) : 
+    // 총구 위치 가져오기 (소켓 이름: muzzle)
+    // 만약 muzzle 소켓이 없으면 총의 원점(Root)에서 나갑니다.
+    FVector SpawnLocation = WeaponMesh->DoesSocketExist(FName("muzzle")) ? 
+                            WeaponMesh->GetSocketLocation(FName("muzzle")) : 
                             GetActorLocation();
 
     // 2. 발사 방향 계산
@@ -71,8 +71,8 @@ void AAllyGunActor::Fire()
     {
         UNiagaraFunctionLibrary::SpawnSystemAttached(
             MuzzleFlashEffect,
-            WeaponMesh,             // 어디에 붙일 것인가?
-            FName("Muzzle"),  // 총구 소켓 이름
+            WeaponMesh,             // 어디에 붙일 것인가
+            FName("muzzle"),  // 총구 소켓 이름
             FVector::ZeroVector, 
             FRotator::ZeroRotator, 
             EAttachLocation::SnapToTarget, 
