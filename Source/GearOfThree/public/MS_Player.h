@@ -175,6 +175,9 @@ protected: // 무기 관련 내용
 	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<AMS_Weapon> AR15WeaponClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Weapon")
+	TSubclassOf<AMS_Weapon> K9RavClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<AMS_Weapon> AK105WeaponClass;

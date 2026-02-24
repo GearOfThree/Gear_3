@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "MS_Bullet.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraSystem.h"
 #include "MS_Weapon.generated.h"
 
 UENUM()
@@ -46,9 +47,18 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> FirePosition;
 	
-	// UPROPERTY(EditDefaultsOnly, Category="Weapon")
-	// TSubclassOf<AMS_Bullet> BulletClass;
+	UPROPERTY(EditDefaultsOnly, Category="FX|Niagara")
+	TObjectPtr<UNiagaraSystem> MuzzleFX = nullptr;
 	
+	UPROPERTY(EditDefaultsOnly, Category="FX|Sound")
+	TObjectPtr<USoundBase> FireSound = nullptr;
+	
+	// 탄피 // 이건 할지 안할지 모름
+	UPROPERTY(EditDefaultsOnly, Category="FX|Shell")
+	TSubclassOf<AActor> ShellFactory;
+	
+	UPROPERTY(EditDefaultsOnly, Category="FX|Shell")
+	TObjectPtr<USceneComponent> EjectPosition;
 	
 	
 	// 무기의 사거리 설정 
@@ -74,4 +84,10 @@ public:
 	
 protected:
 	void FireTowards(const FVector& AimPoint);
+	
+	void PlayMuzzleFlash();
+	
+	void PlayFireSound();
+	
+	void EjectShell();
 };

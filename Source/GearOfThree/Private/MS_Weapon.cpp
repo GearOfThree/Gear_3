@@ -2,9 +2,10 @@
 
 
 #include "MS_Weapon.h"
-
+#include "NiagaraFunctionLibrary.h"
 #include "MS_Player.h"
 #include "MS_PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMS_Weapon::AMS_Weapon()
@@ -21,6 +22,9 @@ AMS_Weapon::AMS_Weapon()
 	
 	FirePosition = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FirePosition"));
 	FirePosition->SetupAttachment(WeaponMesh);
+	
+	EjectPosition = CreateDefaultSubobject<USceneComponent>(TEXT("EjectPosition"));
+	EjectPosition->SetupAttachment(WeaponMesh);
 }
 
 
@@ -101,24 +105,131 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 	
 	const FVector MuzzleLoc = FirePosition->GetComponentLocation();
 	const FRotator BulletRot = (AimPoint - MuzzleLoc).Rotation(); // Note : 확인확인
-
+	const FVector Dir = BulletRot.Vector();
+	
 	FActorSpawnParameters Params;
 	Params.Owner = GetOwner();
 	Params.Instigator = Cast<APawn>(GetOwner());
 	Params.SpawnCollisionHandlingOverride =
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	GetWorld()->SpawnActor<AActor>(BulletFactory, MuzzleLoc, BulletRot, Params);
+	AActor* Bullet = GetWorld()->SpawnActor<AActor>(BulletFactory, MuzzleLoc, BulletRot, Params);
+	
+	if (!Bullet) return;
+	
+	// 총알 제거 
+	Bullet->SetLifeSpan(5.f);
+	
+	UStaticMeshComponent* mesh = Bullet->FindComponentByClass<UStaticMeshComponent>();
+	if (!mesh) return;
+	
+	// 고속 충돌 안정화
+	mesh->BodyInstance.bUseCCD = true;
+	
+	mesh->SetSimulatePhysics(true); // 물리 충돌 켜기
+	mesh->SetEnableGravity(false); // 중력
+	mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// 0.02f : 가벼운 탄 / 0.20f : 무거운 탄
+	mesh->SetMassOverrideInKg(NAME_None, 0.30f, true);
+	// mesh->SetPhysicsLinearVelocity(Dir * 6000.f, false);
 	
 	
-	DrawDebugSphere(GetWorld(), MuzzleLoc, 6.f, 12, FColor::Red, false, 2.f);
-	DrawDebugLine(GetWorld(), MuzzleLoc, AimPoint, FColor::Green, false, 2.f, 0, 1.f);
-	DrawDebugLine(GetWorld(), MuzzleLoc, MuzzleLoc + BulletRot.Vector() * 2000.f, FColor::Red, false, 2.f, 0, 1.f);
+	UE_LOG(LogTemp, Warning, TEXT("Bullet=%s mesh=%s SimPhys=%d Mass=%.4f Collision=%d"),
+	*GetNameSafe(Bullet),
+	*GetNameSafe(mesh),
+	mesh ? mesh->IsSimulatingPhysics() : 0,
+	mesh ? mesh->GetMass() : -1.f,
+	mesh ? (int32)mesh->GetCollisionEnabled() : -1
+	);
 	
-	// 물리엔진 코드
-	// if (Bullet)
-	// {
-	// 	
-	// 	
-	// }
+	// 세부 Collision 설정
+	// 내 몸만 무시
+	if (AActor* ownerActor = GetOwner())
+	{
+		// 총알이 움직일때 캐릭터를 무시하고 
+		mesh->IgnoreActorWhenMoving(ownerActor, true);
+		mesh->MoveIgnoreActors.AddUnique(ownerActor);
+		
+		// Owner 쪽 캡슐도 총알을 무시하게(더 안정적)
+		if (UPrimitiveComponent* OwnerPrim = Cast<UPrimitiveComponent>(ownerActor->GetRootComponent()))
+		{
+			// 캐릭터가 움직일때 총알을 무시한다. 
+			OwnerPrim->IgnoreActorWhenMoving(Bullet, true);
+			OwnerPrim->MoveIgnoreActors.AddUnique(Bullet);
+		}
+	}
+		
+	// 물리 바디 깨우기
+	mesh->WakeAllRigidBodies();
+	
+	const float ImpulseStrength = 50.f;
+	
+	// 발사
+	// true : 질량은 무시하고 속도 변화처럼 들어간다. 
+	// false : 질량의 영향을 받아서 들어간다. 
+	mesh->AddImpulse(Dir * ImpulseStrength, NAME_None, false);
+	
+	
+	
+	
+	// DrawDebugSphere(GetWorld(), MuzzleLoc, 6.f, 12, FColor::Red, false, 2.f);
+	// DrawDebugLine(GetWorld(), MuzzleLoc, AimPoint, FColor::Green, false, 2.f, 0, 1.f);
+	// DrawDebugLine(GetWorld(), MuzzleLoc, MuzzleLoc + BulletRot.Vector() * 2000.f, FColor::Red, false, 2.f, 0, 1.f);
+	
+	DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Yellow, false, 3.f);
+	FTimerHandle H;
+	GetWorld()->GetTimerManager().SetTimer(H, [this, Bullet]()
+	{
+		if (!IsValid(Bullet)) return;
+		DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Cyan, false, 3.f);
+	}, 0.2f, false);
+	const FVector V = mesh->GetPhysicsLinearVelocity();
+	
+	PlayMuzzleFlash();
+	PlayFireSound();
+	EjectShell();
+}
+
+void AMS_Weapon::PlayMuzzleFlash()
+{
+	if (!MuzzleFX || !FirePosition) return;
+
+	UNiagaraFunctionLibrary::SpawnSystemAttached(
+		MuzzleFX,
+		FirePosition,          // FirePosition에 붙임
+		NAME_None,
+		FVector::ZeroVector,
+		FRotator::ZeroRotator,
+		EAttachLocation::SnapToTarget,
+		true
+	);
+	
+}
+
+void AMS_Weapon::PlayFireSound()
+{
+	if (!FireSound || !FirePosition) return;
+	UGameplayStatics::PlaySoundAtLocation(this, FireSound, FirePosition->GetComponentLocation());
+}
+
+void AMS_Weapon::EjectShell()
+{
+	if (!ShellFactory || !EjectPosition) return;
+	
+	const FVector Loc = EjectPosition->GetComponentLocation();
+	const FRotator Rot = EjectPosition->GetComponentRotation();
+	
+	AActor* Shell = GetWorld()->SpawnActor<AActor>(ShellFactory, Loc, Rot);
+	if (!Shell) return;
+	
+	if (UStaticMeshComponent* staticMesh = Shell->FindComponentByClass<UStaticMeshComponent>())
+	{
+		staticMesh->SetSimulatePhysics(true);
+		
+		// 오른쪽/위로 튀어나가게 (총알의 방향에 맞게 조정 필요하다) // 탄피가 나가는 힘 조정
+		const FVector Imp = EjectPosition->GetRightVector() * 5.f + EjectPosition->GetUpVector() * 5.f;
+		staticMesh->AddImpulse(Imp, NAME_None, false); // 물리 힘 사용
+	}
+	Shell->SetLifeSpan(3.f); // 3 초 지정
+	
 }

@@ -96,13 +96,13 @@ void AMS_Player::BeginPlay()
 	TMap<EWeaponDirection, FMS_WeaponSlotData> DataMap;
 	
 	{
-		UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun01-AR15.Gun01-AR15'"));
+		UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun03-K9Rav.Gun03-K9Rav'"));
 				
 		FMS_WeaponSlotData data;
 		data.Direction = EWeaponDirection::Left;
-		data.DisplayName = FText::FromString(TEXT("AR15"));
+		data.DisplayName = FText::FromString(TEXT("K9_Rav"));
 		data.Icon = ImageIcon;
-		data.WeaponClass = AR15WeaponClass;
+		data.WeaponClass = K9RavClass;
 		DataMap.Add(EWeaponDirection::Left, data);
 	}
 	
@@ -350,14 +350,14 @@ void AMS_Player::ShowWeaponWheelUI(bool bShow)
 			
 			// 왼쪽
 			{
-				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun01-AR15.Gun01-AR15'"));
+				UTexture2D* ImageIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Script/Engine.Texture2D'/Game/Miso/Gun/image/Gun03-K9Rav.Gun03-K9Rav'"));
 				// UStaticMesh* GunMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Script/Engine.StaticMesh'/Game/Fab/AR-15_style_rifle/ar_15_style_rifle/StaticMeshes/ar_15_style_rifle.ar_15_style_rifle'"));
 				
 				FMS_WeaponSlotData data;
 				data.Direction = EWeaponDirection::Left;
-				data.DisplayName = FText::FromString(TEXT("AR15"));
+				data.DisplayName = FText::FromString(TEXT("K9_Rav"));
 				data.Icon = ImageIcon;
-				data.WeaponClass = AR15WeaponClass;
+				data.WeaponClass = K9RavClass;
 				DataMap.Add(EWeaponDirection::Left, data);
 			}
 			

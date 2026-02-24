@@ -35,5 +35,14 @@ public:
 	
 	// 외관 컴포넌트
 	UPROPERTY(VisibleAnywhere, Category=BodyMesh)
-	class UStaticMeshComponent* BodyMeshComponent;
+	class UStaticMeshComponent* BulletMesh;
+	
+	UPROPERTY(EditDefaultsOnly, Category="FX|Cascade")
+	TObjectPtr<UParticleSystem> ImpactFX;
+	
+	// 미소 : 다시 확인할 내용
+	UFUNCTION()
+	void OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
+					 UPrimitiveComponent* OtherComp, FVector NormalImpulse,
+					 const FHitResult& Hit);
 };
