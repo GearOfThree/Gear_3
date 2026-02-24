@@ -11,7 +11,7 @@ struct GEAROFTHREE_API FSTE_TargetSelectorInstanceData
 
 	// 플레이어가 이 거리(cm) 안에 들어오면 최우선 타겟이 됨
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	float PlayerPriorityRange = 1000.0f;
+	float PlayerPriorityRange = 2500.0f;
 
 	// 최종 선정된 타겟 (태스크에 연결될 값)
 	UPROPERTY(EditAnywhere, Category = "Output")

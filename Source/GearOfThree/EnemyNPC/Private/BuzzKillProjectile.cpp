@@ -11,15 +11,16 @@ ABuzzKillProjectile::ABuzzKillProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	// 1. 메쉬를 Root로 확실하게 고정!
+	// 메쉬를 Root로
 	SawMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SawMesh"));
 	RootComponent = SawMesh;
     
-	// 충돌체는 굳이 안 써도 되지만 쓴다면 메쉬 아래에 붙여줍니다 (SetupAttachment)
+	// 충돌체는 메쉬 아래에 붙여줍니다 (SetupAttachment)
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->SetupAttachment(RootComponent);
-	// (이후 충돌 이벤트 바인딩은 그대로 둠)
+	
+	// 충돌 이벤트 바인딩
 	CollisionComp->OnComponentHit.AddDynamic(this, &ABuzzKillProjectile::OnHit); 
     
 	// 외형 및 물리 설정 유지
@@ -28,7 +29,7 @@ ABuzzKillProjectile::ABuzzKillProjectile()
 	SawMesh->SetEnableGravity(false);
 	SawMesh->SetLinearDamping(0.1f);
     
-	// 여기서 SawMesh에 Hit 이벤트를 켤 거면 확실하게 세팅!
+	// 여기서 Hit 이벤트를 켤 거면 확실하게 세팅
 	SawMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
 	SawMesh->SetNotifyRigidBodyCollision(true); // "충돌 시 이벤트를 발생시켜라!"
 	SawMesh->BodyInstance.bUseCCD = true; 
@@ -53,20 +54,20 @@ void ABuzzKillProjectile::BeginPlay()
 	// 발사 시 물리적 힘 가하기
 	if (SawMesh)
 	{
-		// [이동] 보는 방향(Forward)으로 강력하게 밀기
+		// 보는 방향(Forward)으로 밀기
 		FVector ImpulseDir = GetActorForwardVector();
 		SawMesh->AddImpulse(ImpulseDir * LaunchPower, NAME_None, true);
 
-		// [회전] Y축 기준으로 팽이처럼 돌리기
+		// Y축 기준으로 팽이처럼 돌리기
 		FVector TorqueDir = FVector(0.0f, 1.0f, 0.0f); 
 		SawMesh->AddTorqueInRadians(TorqueDir * SpinPower, NAME_None, true);
 	}
 	if (GetInstigator()) 
 	{
-		// 1. 톱날 메쉬가 주인의 캡슐/메쉬를 무시하게 함
+		// 톱날 메쉬가 주인의 캡슐/메쉬를 무시하게 함
 		SawMesh->IgnoreActorWhenMoving(GetInstigator(), true);
 		
-		// 2. 주인도 톱날을 무시하게 함 (양방향 무시)
+		// 주인도 톱날을 무시하게 함 (양방향 무시)
 		GetInstigator()->MoveIgnoreActorAdd(this);
 	}
 	if (GetOwner())
@@ -175,12 +176,12 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 		}
 
 		// 적대적 관계 명중 (사이언 -> 샐리, 혹은 플레이어 -> 사이언)
-		UE_LOG(LogTemp, Warning, TEXT("🎯 [BuzzKill] 유효타 명중! (Shooter: %s -> Victim: %s)"), *Shooter->GetName(), *HitCharacter->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("BuzzKill 명중 (Shooter: %s -> Victim: %s)"), *Shooter->GetName(), *HitCharacter->GetName());
 
-		// 맞은 대상(Victim)이 누구냐에 따라 이펙트 분기
+		// 맞은 대상에 따라 이펙트 분기
 		if (HitCharacter->GetTeamSide() == ETeamSide::Ally || HitCharacter->GetTeamSide() == ETeamSide::Player)
 		{
-			// 샐리나 플레이어가 맞았을 때! (아군 전용 피격 이펙트)
+			// 샐리나 플레이어가 맞았을 때 (아군 전용 피격 이펙트)
 			if (AllyHitEffect)
 			{
 				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());

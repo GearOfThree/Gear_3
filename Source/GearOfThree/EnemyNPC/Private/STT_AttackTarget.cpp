@@ -56,7 +56,7 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
     // 사거리 안에 들어오면 멈춰서 쏩니다!
     else
     {
-        // 브레이크 꽉! (문워크 방지)
+        // (문워크 방지)
         if (AIC->GetMoveStatus() != EPathFollowingStatus::Idle) AIC->StopMovement();
         MoveComp->Velocity = FVector::ZeroVector;
         MoveComp->bOrientRotationToMovement = false; 

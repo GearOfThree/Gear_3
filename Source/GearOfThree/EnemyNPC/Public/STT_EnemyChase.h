@@ -12,7 +12,7 @@ struct GEAROFTHREE_API FSTT_EnemyChaseInstanceData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Parameter")
-	float AttackRange = 1200.0f;
+	float AttackRange = 2000.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "Context")
 	AActor* TargetActor = nullptr;

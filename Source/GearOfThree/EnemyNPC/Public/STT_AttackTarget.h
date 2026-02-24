@@ -14,7 +14,7 @@ struct GEAROFTHREE_API FSTT_AttackTargetInstanceData
 	TObjectPtr<AActor> TargetActor = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	float AttackRange = 1000.0f; 
+	float AttackRange = 3000.0f; 
 };
 
 USTRUCT(meta = (DisplayName = "Attack Target Task"))
