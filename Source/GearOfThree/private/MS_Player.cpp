@@ -327,6 +327,11 @@ void AMS_Player::CachedDefaults_Base()
 	bCached_Base = true;
 }
 
+bool AMS_Player::IsWantsADS() const
+{
+	return bWantsADS;
+}
+
 
 // ############################ 무기 선택 ############################
 

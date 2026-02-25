@@ -136,7 +136,6 @@ protected:
 	
 private:
 	// 초기 상태
-	bool bWantsADS = false;
 	
 	float TargetFOV;
 	float TargetArmLength;
@@ -146,7 +145,9 @@ private:
 	void CachedDefaults_Base();
 	
 	bool bCachedDefaults = false;
-	
+	bool bWantsADS = false;
+public:
+	bool IsWantsADS() const;
 protected: // 무기 관련 내용
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")

@@ -101,7 +101,10 @@ void AMS_Weapon::Fire()
 // 총구(FirePosition)에서 AimPoint를 향해 발사
 void AMS_Weapon::FireTowards(const FVector& AimPoint)
 {
-	if (!BulletFactory || !FirePosition) return;
+	// MS_Player 에 접근해서 현재 조준하고 있는 상태인지 가져오기 위해서 접근한다. 
+	AMS_Player* Player = Cast<AMS_Player>(GetOwner());
+	
+	if (!BulletFactory || !FirePosition || !Player->IsWantsADS()) return;
 	
 	const FVector MuzzleLoc = FirePosition->GetComponentLocation();
 	const FRotator BulletRot = (AimPoint - MuzzleLoc).Rotation(); // Note : 확인확인
