@@ -48,15 +48,11 @@ protected:
 
 	/** Returns true if the player should use UMG touch controls */
 	bool ShouldUseTouchControls() const;
-
-	// UPROPERTY(EditDefaultsOnly, Category="UI|WeaponWheel")
-	// TSubclassOf<class UUserWidget> WeaponWheelWidgetClass;
-	//
-	// // 생성된 위젯 인스턴스 캐시
-	// UPROPERTY(Transient)
-	// TObjectPtr<UUserWidget> WeaponWheelWidget = nullptr;
-	//
-	// // 현재 선택 인덱스(위젯이 업데이트하거나, 캐릭터가 계산)
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="UI|WeaponWheel")
-	// int32 SelectedWheelIndex = INDEX_NONE;
+	
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> CrosshairWidgetClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UUserWidget> CrosshairWidget;
 };

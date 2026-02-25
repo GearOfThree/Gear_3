@@ -19,18 +19,29 @@ void AMS_PlayerController::BeginPlay()
 	{
 		// spawn the mobile controls widget
 		MobileControlsWidget = CreateWidget<UUserWidget>(this, MobileControlsWidgetClass);
-
+	
 		if (MobileControlsWidget)
 		{
 			// add the controls to the player screen
 			MobileControlsWidget->AddToPlayerScreen(0);
-
+	
 		} else {
-
+	
 			UE_LOG(LogGearOfThree, Error, TEXT("Could not spawn mobile controls widget."));
-
+	
 		}
+	
+	}
+	
+	if (CrosshairWidgetClass)
+	{
+		CrosshairWidget = CreateWidget<UUserWidget>(this, CrosshairWidgetClass);
 
+		if (CrosshairWidget)
+		{
+			CrosshairWidget->AddToViewport();
+			CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
 	}
 }
 

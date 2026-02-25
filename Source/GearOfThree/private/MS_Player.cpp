@@ -279,6 +279,14 @@ void AMS_Player::StartADS()
 	TargetArmLength = ADSArmLength;
 	TargetSocketOffset = ADSSocketOffset;
 
+	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
+	{
+		if (PlayerController->CrosshairWidget)
+		{
+			PlayerController->CrosshairWidget->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	
 	// (선택) 조준 중 회전 반응을 더 즉각적으로 하고 싶다면:
 	// bUseControllerRotationYaw = true;
 	// GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -295,6 +303,14 @@ void AMS_Player::StopADS()
 	TargetArmLength = DefaultArmLength;
 	TargetSocketOffset = DefaultSocketOffset;
 
+	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
+	{
+		if (PlayerController->CrosshairWidget)
+		{
+			PlayerController->CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	
 	// (선택) 원복
 	// bUseControllerRotationYaw = false;
 	// GetCharacterMovement()->bOrientRotationToMovement = true;
