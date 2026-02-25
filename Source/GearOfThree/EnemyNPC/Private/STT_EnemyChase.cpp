@@ -4,32 +4,42 @@
 #include "GameFramework/Controller.h"
 #include "AIController.h"
 #include "NPCCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 
 EStateTreeRunStatus FSTT_EnemyChase::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
-	//데이터 가져오기
+	//추격 상태 진입 (시작하자마자 로그부터 찍게)
+	UE_LOG(LogTemp, Log, TEXT("🏃‍♂️ [STATE] Enter Chase State"));
+
+	// 데이터 가져오기
 	const FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
 
-	AActor* Owner = Cast<AActor>(Context.GetOwner());
-	APawn* PawnOwner = Cast<APawn>(Owner);
-	if (!PawnOwner) return EStateTreeRunStatus::Failed;
+	// 액터 캐스팅 (Tick 함수처럼 깔끔하게 ANPCCharacter로 캐스팅)
+	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
+	if (!Owner) return EStateTreeRunStatus::Failed;
 
-	AAIController* AIController = Cast<AAIController>(PawnOwner->GetController());
-	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(Context.GetWorld(), 0);
+	AAIController* AIC = Cast<AAIController>(Owner->GetController());
+    
+	//플레이어가 아니라, StateTree에서 바인딩해 준 'TargetActor'를 가져옵니다.
+	AActor* Target = InstanceData.TargetActor; 
 
-	if (AIController && Player)
+	if (AIC && Target)
 	{
-		// InstanceData.AttackRange 로 접근!
-		AIController->MoveToActor(Player, InstanceData.AttackRange * 0.8f);
+		//이전 상태의 조준(시선 고정)을 풀어줍니다
+		AIC->ClearFocus(EAIFocusPriority::Gameplay);
+		Owner->bUseControllerRotationYaw = false; 
+		if (Owner->GetCharacterMovement())
+		{
+			Owner->GetCharacterMovement()->bOrientRotationToMovement = true; // 이동하는 방향 쳐다보기
+		}
+
+		// 타겟을 향해 이동 명령!
+		AIC->MoveToActor(Target, InstanceData.AttackRange * 0.8f);
 		return EStateTreeRunStatus::Running;
 	}
-	
-	// [로그] 추격 상태 진입
-	UE_LOG(LogTemp, Log, TEXT("=== [STATE] Enter ChaseState ==="));
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("Entering Chase State"));
-	
+    
 	return EStateTreeRunStatus::Failed;
 }
 
@@ -39,7 +49,7 @@ EStateTreeRunStatus FSTT_EnemyChase::Tick(FStateTreeExecutionContext& Context, c
 	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
 	AAIController* AIC = Cast<AAIController>(Owner->GetController());
 
-	// [변경] 타겟 사용
+	// 타겟 사용
 	AActor* Target = InstanceData.TargetActor; 
 
 	if (!Owner || !AIC || !Target) return EStateTreeRunStatus::Failed;

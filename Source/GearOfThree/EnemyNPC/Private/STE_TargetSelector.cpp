@@ -30,7 +30,6 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 	else if (Owner->TeamSide == ETeamSide::Ally)
 	{
 		// 아군 로직
-		// 아군은 플레이어를 공격하면 안 됨! 오직 '적군 팀'만 찾음
 		FinalTarget = Owner->FindClosestEnemy(); 
         
 		// 적군이 하나도 없다면? FinalTarget은 nullptr가 됨
@@ -40,13 +39,13 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 		{
 			// 적을 찾았을 때: 빨간색 로그
 			GEngine->AddOnScreenDebugMessage(10, 0.0f, FColor::Red, 
-				FString::Printf(TEXT("👁️ [Eyes] Found Enemy: %s"), *FinalTarget->GetName()));
+				FString::Printf(TEXT("Found Enemy: %s"), *FinalTarget->GetName()));
 		}
 		else
 		{
 			// 적을 못 찾았을 때: 노란색 로그
 			GEngine->AddOnScreenDebugMessage(10, 0.0f, FColor::Yellow, 
-				TEXT("👁️ [Eyes] No Enemy Found... Looking at Player"));
+				TEXT("No Enemy Found... Looking at Player"));
 		}
 	}
 	

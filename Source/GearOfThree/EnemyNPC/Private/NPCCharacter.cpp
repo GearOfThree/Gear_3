@@ -16,7 +16,7 @@ ANPCCharacter::ANPCCharacter()
 	CurrentAmmo = MaxAmmo;
 	bIsReloading = false;
 	
-	// 기본 팀 설정 (나중에 블루프린트에서 변경 가능)
+	// 기본 팀 설정
 	TeamSide = ETeamSide::Ally; 
 }
 
@@ -62,8 +62,8 @@ AActor* ANPCCharacter::FindClosestEnemy()
 		// if (NPC->IsDead()) continue; 
 
 		// 나와 팀이 다른 경우만 적군으로 간주
-		// (TeamSide가 다르면 적으로 인식!)
-		if (NPC->TeamSide != this->TeamSide) 
+		// (TeamSide가 다르면 적으로 인식)
+		if (this->IsHostile(NPC)) 
 		{
 			float Dist = GetDistanceTo(NPC);
 			if (Dist < MinDistance)

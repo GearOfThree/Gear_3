@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraComponent.h"
 #include "BuzzKillProjectile.generated.h"
 
 UCLASS()
@@ -22,6 +23,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Components")
 	UStaticMeshComponent* SawMesh;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Collision")
+	class USphereComponent* CollisionComp;
 	
 	// 발사 속도 (Impulse 강도)
 	UPROPERTY(EditAnywhere, Category="Physics")
@@ -43,4 +47,17 @@ protected:
 	float CustomGravityScale = 0.3f;
 	
 	FVector LastFrameVelocity;
+	
+public:
+	// 🔹 날아가는 궤적 (항상 켜져 있는 컴포넌트)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VFX")
+	UNiagaraComponent* TrailEffectComp;
+
+	// 🔹 피격 이펙트들 (블루프린트에서 각각 다른 에셋 할당)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	UNiagaraSystem* AllyHitEffect;  // 아군(샐리/플레이어)이 맞았을 때
+
+	// 🔹 벽에 맞고 튕겨 나갈 때 (예: 쇠가 긁히는 불꽃 스파크!)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	UNiagaraSystem* BounceSparkEffect;
 };
