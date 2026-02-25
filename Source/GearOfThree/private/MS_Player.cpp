@@ -58,6 +58,8 @@ AMS_Player::AMS_Player()
 	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("WeaponSocket")); // 손 소켓
 	WeaponMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
+	TeamSide = ETeamSide::Player;
+	
 }
 
 void AMS_Player::BeginPlay()

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GearCharacter.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "InputMappingContext.h"
@@ -21,7 +22,7 @@ struct FInputActionValue;
  *  Implements a controllable orbiting camera
  */
 UCLASS(abstract)
-class AMS_Player : public ACharacter
+class AMS_Player : public AGearCharacter
 {
 	GENERATED_BODY()
 
