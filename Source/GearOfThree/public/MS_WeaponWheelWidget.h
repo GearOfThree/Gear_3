@@ -24,8 +24,7 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	EWeaponDirection GetSelectedDirection() const { return SelectedDirection; }
-	
-	// FOnDirectionSelected OnDirectionSelected; 
+
 protected:
 	virtual void NativeOnInitialized() override;
 	
