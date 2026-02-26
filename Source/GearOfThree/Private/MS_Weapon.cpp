@@ -62,7 +62,7 @@ void AMS_Weapon::Fire()
 	
 	// 카메라 라인트레이스 /// note : 별별별
 	const FVector TraceStart = CameraLocation;
-	const FVector TraceEnd = CameraLocation + CameraRotation.Vector() * BulletMaxDistance;
+	const FVector TraceEnd = TraceStart + CameraRotation.Vector() * BulletMaxDistance;
 	
 	FHitResult Hit; // 라인트레이스 결과를 담는 결과 저장용 구조체
 	FCollisionQueryParams CollisionParams; // 라인트레이스를 어떻게 검사할지 설정하는 옵션 객체
@@ -105,10 +105,9 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 	AMS_Player* Player = Cast<AMS_Player>(GetOwner());
 	
 	if (!BulletFactory || !FirePosition || !Player->bWantsADS) return;
-	// if (!BulletFactory || !FirePosition ) return;
 	
 	const FVector MuzzleLoc = FirePosition->GetComponentLocation();
-	const FRotator BulletRot = (AimPoint - MuzzleLoc).Rotation(); // Note : 확인확인
+	const FRotator BulletRot = (AimPoint - MuzzleLoc).Rotation(); 
 	const FVector Dir = BulletRot.Vector();
 	
 	FActorSpawnParameters Params;
@@ -176,11 +175,13 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 	
 	
 	
-	// DrawDebugSphere(GetWorld(), MuzzleLoc, 6.f, 12, FColor::Red, false, 2.f);
-	// DrawDebugLine(GetWorld(), MuzzleLoc, AimPoint, FColor::Green, false, 2.f, 0, 1.f);
-	// DrawDebugLine(GetWorld(), MuzzleLoc, MuzzleLoc + BulletRot.Vector() * 2000.f, FColor::Red, false, 2.f, 0, 1.f);
+	DrawDebugSphere(GetWorld(), MuzzleLoc, 6.f, 12, FColor::Red, false, 2.f);
+	DrawDebugLine(GetWorld(), MuzzleLoc, AimPoint, FColor::Green, false, 2.f, 0, 1.f);
+	DrawDebugLine(GetWorld(), MuzzleLoc, MuzzleLoc + BulletRot.Vector() * 2000.f, FColor::Red, false, 2.f, 0, 1.f);
 	
 	DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Yellow, false, 3.f);
+	
+	
 	FTimerHandle H;
 	GetWorld()->GetTimerManager().SetTimer(H, [this, Bullet]()
 	{
