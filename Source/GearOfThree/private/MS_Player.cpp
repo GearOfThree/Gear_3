@@ -2,6 +2,7 @@
 
 #include "public/MS_Player.h"
 
+#include "CombatDialogueComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -63,6 +64,7 @@ AMS_Player::AMS_Player()
 	
 	TeamSide = ETeamSide::Player;
 	
+	CombatDialogueComponent = CreateDefaultSubobject<UCombatDialogueComponent>(TEXT("CombatDialogue"));
 }
 
 void AMS_Player::BeginPlay()
@@ -117,6 +119,10 @@ void AMS_Player::BeginPlay()
 	
 	FirstWeaponSpawn(EWeaponDirection::Left);
 	
+	if (CombatDialogueComponent)
+	{
+		CombatDialogueComponent->StartCombatDialogue();
+	}
 }
 
 void AMS_Player::Tick(float DeltaTime)
