@@ -21,6 +21,9 @@
 
 AMS_Player::AMS_Player()
 {
+	// 틱설정 활성화
+	PrimaryActorTick.bCanEverTick = true;
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -83,7 +86,7 @@ void AMS_Player::BeginPlay()
 
 	// #################### 초점 변경 관련 ####################
 	
-	CachedDefaults_Base();
+	// 초기의 초점 내용을 저장한다. 
 
 	CameraBoom->TargetArmLength = DefaultArmLength;
 	CameraBoom->SocketOffset = DefaultSocketOffset;
@@ -92,6 +95,8 @@ void AMS_Player::BeginPlay()
 	TargetArmLength = DefaultArmLength;
 	TargetSocketOffset = DefaultSocketOffset;
 	TargetFOV = DefaultFOV;
+	
+	CachedDefaults_Base();
 	
 	// #################### 무기 관련 ####################
 	
@@ -121,6 +126,18 @@ void AMS_Player::Tick(float DeltaTime)
 	if (!CameraBoom || !FollowCamera)
 		return;
 
+	if (bWantsADS)
+	{
+		TargetFOV = ADSFOV;
+		TargetArmLength = ADSArmLength;
+		TargetSocketOffset = ADSSocketOffset;
+	} else
+	{
+		TargetFOV = DefaultFOV;
+		TargetArmLength = DefaultArmLength;
+		TargetSocketOffset = DefaultSocketOffset;
+	}
+	
 	// 1) FOV 보간 (초점 변화 느낌의 핵심)
 	const float NewFOV = FMath::FInterpTo(FollowCamera->FieldOfView, TargetFOV, DeltaTime, ADSInterpSpeed);
 	FollowCamera->SetFieldOfView(NewFOV);
@@ -275,11 +292,11 @@ void AMS_Player::StartADS()
 	CachedDefaults_Base();
 
 	bWantsADS = true;
-
+	UE_LOG(LogTemp, Warning, TEXT("ADS=%d"), bWantsADS);
 	// 목표값을 ADS로
-	TargetFOV = ADSFOV;
-	TargetArmLength = ADSArmLength;
-	TargetSocketOffset = ADSSocketOffset;
+	// TargetFOV = ADSFOV;
+	// TargetArmLength = ADSArmLength;
+	// TargetSocketOffset = ADSSocketOffset;
 
 	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
 	{
@@ -289,21 +306,25 @@ void AMS_Player::StartADS()
 		}
 	}
 	
-	// (선택) 조준 중 회전 반응을 더 즉각적으로 하고 싶다면:
-	// bUseControllerRotationYaw = true;
-	// GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void AMS_Player::StopADS()
 {
 	CachedDefaults_Base();
 
+	// UE_LOG(LogTemp, Warning, TEXT("bIsAiming=%d FollowCamera=%s FOV=%f TargetFOV=%f"),
+	// bWantsADS ? 1 : 0,
+	// *GetNameSafe(FollowCamera),
+	// FollowCamera ? FollowCamera->FieldOfView : -1.f,
+	// TargetFOV);
+	
+	// 플레그 값
 	bWantsADS = false;
-
+	UE_LOG(LogTemp, Warning, TEXT("ADS=%d"), bWantsADS);
 	// 목표값을 기본으로
-	TargetFOV = DefaultFOV;
-	TargetArmLength = DefaultArmLength;
-	TargetSocketOffset = DefaultSocketOffset;
+	// TargetFOV = DefaultFOV;
+	// TargetArmLength = DefaultArmLength;
+	// TargetSocketOffset = DefaultSocketOffset;
 
 	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
 	{
@@ -320,19 +341,19 @@ void AMS_Player::StopADS()
 
 void AMS_Player::CachedDefaults_Base()
 {
-	if (bCached_Base || !CameraBoom || !FollowCamera) return;
+	if (bCached || !CameraBoom || !FollowCamera) return;
 
-	CachedArmLength_Base = CameraBoom->TargetArmLength;
-	CachedSocketOffset_Base = CameraBoom->SocketOffset;
-	CachedFOV_Base = FollowCamera->FieldOfView;
+	CachedArmLength = CameraBoom->TargetArmLength;
+	CachedSocketOffset = CameraBoom->SocketOffset;
+	CachedFOV = FollowCamera->FieldOfView;
 
-	bCached_Base = true;
+	bCached = true;
 }
 
-bool AMS_Player::IsWantsADS() const
-{
-	return bWantsADS;
-}
+// bool AMS_Player::IsWantsADS() const
+// {
+// 	return bWantsADS;
+// }
 
 
 // ############################ 무기 선택 ############################
