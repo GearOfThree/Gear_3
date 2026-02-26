@@ -22,7 +22,7 @@ struct FInputActionValue;
  *  Implements a controllable orbiting camera
  */
 UCLASS()
-class AMS_Player : public AGearCharacter // 초점 이동 불가능
+class AMS_Player : public AGearCharacter
 {
 	GENERATED_BODY()
 

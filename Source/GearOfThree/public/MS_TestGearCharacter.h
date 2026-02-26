@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MS_Damageable.h"
+#include "MS_HPComponent.h"
 #include "EnemyNPC/Public/GearCharacter.h"
 #include "MS_TestGearCharacter.generated.h"
 
@@ -10,30 +12,24 @@
  * 
  */
 UCLASS()
-class GEAROFTHREE_API AMS_TestGearCharacter : public ACharacter
+class GEAROFTHREE_API AMS_TestGearCharacter : public AGearCharacter
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	AMS_TestGearCharacter();
 	
 	virtual void BeginPlay() override;
 	
 	virtual void Tick( float DeltaTime ) override;
 	
-
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	class UStaticMeshComponent* BodyMesh;
+	UStaticMeshComponent* BodyMesh;
 	
-	UPROPERTY(VisibleAnywhere, Category=Collision)
-	class USphereComponent* CollisionComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UMS_HPComponent* HP;
 	
-	UPROPERTY(VisibleAnywhere, Category=StatInfo)
-	float Hp;
-	
-	UPROPERTY(VisibleAnywhere, Category=StatInfo)
-	float MaxHp;
-	
-	UPROPERTY(VisibleAnywhere)
-	bool IsDead;
+public:
+	virtual void ReceiveDamage_Implementation(float Damage, AActor* DamageCauser) override;
 };

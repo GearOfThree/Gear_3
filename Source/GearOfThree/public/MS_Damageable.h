@@ -1,4 +1,6 @@
 
+#pragma once
+#include "UObject/Interface.h"
 #include "MS_Damageable.generated.h"
 
 UINTERFACE(BlueprintType)
@@ -13,4 +15,6 @@ class IMS_Damageable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ReceiveDamage(float Damage, AActor* DamageCauser);
+	
+	
 };
