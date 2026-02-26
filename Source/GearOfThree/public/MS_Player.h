@@ -21,8 +21,8 @@ struct FInputActionValue;
  *  A simple player-controllable third person character
  *  Implements a controllable orbiting camera
  */
-UCLASS(abstract)
-class AMS_Player : public AGearCharacter
+UCLASS()
+class AMS_Player : public AGearCharacter // 초점 이동 불가능
 {
 	GENERATED_BODY()
 
@@ -114,41 +114,43 @@ protected: // 초점 변경 내용
 	
 	// 확대 느낌
 	UPROPERTY(EditAnywhere, Category="ADS|Settings")
-	float ADSFOV = 78.0f; // 
+	float ADSFOV = 30.0f; // 
 
 	// 클수록 캐릭터가 멀고 작게 된담
 	UPROPERTY(EditAnywhere, Category="ADS|Settings")
-	float DefaultArmLength = 350.0f;
+	float DefaultArmLength = 380.0f;
 	
 	UPROPERTY(EditAnywhere, Category="ADS|Settings")
 	float ADSArmLength = 220.0f;
 
 	UPROPERTY(EditAnywhere, Category="ADS|Settings")
-	FVector DefaultSocketOffset = FVector(0.0f, 0.0f, 60.0f);
+	FVector DefaultSocketOffset = FVector(0.0f, 75.0f, 70.0f);
 	
 	UPROPERTY(EditAnywhere, Category="ADS|Settings")
-	FVector ADSSocketOffset = FVector(0.0f, 45.0f, 55.0f);
+	FVector ADSSocketOffset = FVector(0.0f, 60.0f, 65.0f);
 	
-protected:
-	float CachedArmLength_Base = 0.f;
-	FVector CachedSocketOffset_Base = FVector::ZeroVector;
-	float CachedFOV_Base = 0.f;
-	bool bCached_Base = false;
+public:
+	// 런타임 캐시(현재 컴포넌트 값 저장용)
+	float CachedArmLength = 0.f;
+	FVector CachedSocketOffset = FVector::ZeroVector;
+	float CachedFOV = 0.f;
+	bool bCached = false;
 	
-private:
+public:
 	// 초기 상태
-	
 	float TargetFOV;
 	float TargetArmLength;
 	FVector TargetSocketOffset;
 	
-	// 안전하게 커모넌트/값 초기화 해두기
+	// 안전하게 컴포넌트/값 초기화 해두기
 	void CachedDefaults_Base();
 	
 	bool bCachedDefaults = false;
 	bool bWantsADS = false;
+	
 public:
 	bool IsWantsADS() const;
+	
 protected: // 무기 관련 내용
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
