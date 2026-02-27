@@ -5,6 +5,7 @@
 
 #include "GearCharacter.h"
 #include "MS_Damageable.h"
+#include "MS_DamageableCharacter.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -92,7 +93,7 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	if (!OtherActor || OtherActor == this) return;
 	
 	// GearCharacter 를 상속 받고 있는 대상인지 확인한다.
-	AGearCharacter* Character = Cast<AGearCharacter>(OtherActor);
+	AMS_DamageableCharacter* Character = Cast<AMS_DamageableCharacter>(OtherActor);
 	if (!Character) return; 
 	
 	// UMS_Damageable 를 구현하고 있는지 확인한다. && TeamSide 가 Enemy 인지 확인한다. 

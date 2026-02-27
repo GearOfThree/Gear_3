@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MS_Damageable.h"
+#include "MS_DamageableCharacter.h"
 #include "MS_HPComponent.h"
 #include "EnemyNPC/Public/GearCharacter.h"
 #include "MS_TestGearCharacter.generated.h"
@@ -12,7 +13,7 @@
  * 
  */
 UCLASS()
-class GEAROFTHREE_API AMS_TestGearCharacter : public AGearCharacter
+class GEAROFTHREE_API AMS_TestGearCharacter : public AMS_DamageableCharacter
 {
 	GENERATED_BODY()
 	
@@ -27,9 +28,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* BodyMesh;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UMS_HPComponent* HP;
-	
+// 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+// 	UMS_HPComponent* HPComponent;
+// 	
 public:
 	virtual void ReceiveDamage_Implementation(float Damage, AActor* DamageCauser) override;
 };

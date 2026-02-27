@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GearOfThreeTypes.h"
-#include "MS_Damageable.h"
 #include "GameFramework/Character.h"
 #include "GearCharacter.generated.h"
 
 UCLASS()
-class GEAROFTHREE_API AGearCharacter : public ACharacter, public IMS_Damageable
+class GEAROFTHREE_API AGearCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
