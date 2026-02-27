@@ -23,4 +23,9 @@ protected:
 	// 총구 위치 (이펙트나 투사체 생성용)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<USceneComponent> MuzzleLocation;
+	
+public:
+	// 탄퍼짐 각도 (0이면 레이저, 숫자가 클수록 많이 퍼짐)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Weapon|Stats")
+	float WeaponSpreadAngle = 3.0f;
 };

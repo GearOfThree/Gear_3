@@ -35,16 +35,25 @@ void ASawGunActor::Fire()
 	// (지난번에 만든 Evaluator가 NPC의 특정 변수에 타겟을 저장하고 있다고 가정)
 	AActor* CurrentTarget = WeaponOwner->GetCurrentTarget(); // NPC에 이 함수가 있어야 합니다.
 
+	// VRandCone 함수는 절반의 각도(Half-angle)를 요구하므로 반으로 나눕니다.
+	float HalfRad = FMath::DegreesToRadians(WeaponSpreadAngle / 2.0f);
+
 	if (CurrentTarget)
 	{
 		// 타겟의 몸통 중앙을 조준
 		FVector TargetLocation = CurrentTarget->GetActorLocation();
-		SpawnRotation = UKismetMathLibrary::FindLookAtRotation(MuzzlePos, TargetLocation);
+		FRotator OriginRotation = UKismetMathLibrary::FindLookAtRotation(MuzzlePos, TargetLocation);
+		// 탄퍼짐 로직
+		FVector RandomDirection = FMath::VRandCone(OriginRotation.Vector(), HalfRad);
+		SpawnRotation = RandomDirection.Rotation();
 	}
 	else
 	{
 		// 타겟이 없다면 주인이 바라보는 정면으로 발사
-		SpawnRotation = WeaponOwner->GetActorRotation();
+		FRotator OriginRotation = WeaponOwner->GetActorRotation();
+		// 탄퍼짐 로직
+		FVector RandomDirection = FMath::VRandCone(OriginRotation.Vector(), HalfRad);
+		SpawnRotation = RandomDirection.Rotation();
 	}
 
 	// 5. 스폰 파라미터 및 발사

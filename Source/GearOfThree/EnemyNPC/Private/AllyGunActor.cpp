@@ -21,14 +21,14 @@ void AAllyGunActor::Fire()
     //총알 클래스가 블루프린트에서 설정되었는지 확인
     if (!ProjectileClass)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("❌ [Error] ProjectileClass is None!"));
+        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("[Error] ProjectileClass is None!"));
         return;
     }
 
     //무기 메쉬 확인
     if (!WeaponMesh)
     {
-         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("❌ [Error] WeaponMesh is Missing!"));
+         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("[Error] WeaponMesh is Missing!"));
          return;
     }
 
@@ -44,17 +44,28 @@ void AAllyGunActor::Fire()
     // 2. 발사 방향 계산
     FRotator SpawnRotation;
     AActor* Target = OwnerNPC->GetCurrentTarget();
+    
+    // VRandCone 함수는 절반의 각도(Half-angle)를 요구하므로 반으로 나눕니다.
+    float HalfRad = FMath::DegreesToRadians(WeaponSpreadAngle / 2.0f);
 
     if (Target)
     {
         // 타겟이 있으면 타겟을 향해 발사
         FVector TargetLocation = Target->GetActorLocation();
-        SpawnRotation = UKismetMathLibrary::FindLookAtRotation(SpawnLocation, TargetLocation);
+        FRotator OriginRotation = UKismetMathLibrary::FindLookAtRotation(SpawnLocation, TargetLocation);
+        
+        // 탄퍼짐 로직
+        FVector RandomDirection = FMath::VRandCone(OriginRotation.Vector(), HalfRad);
+        SpawnRotation = RandomDirection.Rotation();
     }
     else
     {
         // 타겟이 없으면 주인이 보는 방향으로 발사
-        SpawnRotation = OwnerNPC->GetActorRotation();
+        FRotator OriginRotation = OwnerNPC->GetActorRotation();
+        
+        // 탄퍼짐 로직
+        FVector RandomDirection = FMath::VRandCone(OriginRotation.Vector(), HalfRad);
+        SpawnRotation = RandomDirection.Rotation();
     }
 
     // 총알 스폰 파라미터
