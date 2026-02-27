@@ -28,4 +28,7 @@ public:
 	// 탄퍼짐 각도 (0이면 레이저, 숫자가 클수록 많이 퍼짐)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Weapon|Stats")
 	float WeaponSpreadAngle = 3.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Weapon|Sound")
+	USoundBase* FireSound;
 };
