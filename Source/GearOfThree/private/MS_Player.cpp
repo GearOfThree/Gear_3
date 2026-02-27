@@ -119,10 +119,10 @@ void AMS_Player::BeginPlay()
 	
 	FirstWeaponSpawn(EWeaponDirection::Left);
 	
-	if (CombatDialogueComponent)
-	{
-		CombatDialogueComponent->StartCombatDialogue();
-	}
+	// if (CombatDialogueComponent)
+	// {
+	// 	CombatDialogueComponent->StartCombatDialogue();
+	// }
 }
 
 void AMS_Player::Tick(float DeltaTime)
