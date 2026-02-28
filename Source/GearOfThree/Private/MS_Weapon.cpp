@@ -195,22 +195,22 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 	EjectShell();
 }
 
-void AMS_Weapon::AlignCharacterToCamera()
-{
-	AMS_Player* Player = Cast<AMS_Player>(GetOwner());
-	
-	// 정상적을 캐스팅 됐는지 확인한다. 
-	if (!Player) return ;
-	
-	AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(Player->GetController());
-	
-	if (PlayerController)
-	{
-		// 카메라의 방향으로 플레이어도 회전한다. 
-		// FRotator ControlRot = PlayerController->GetControlRotation();
-		// FRotator NewRot()
-	}
-}
+// void AMS_Weapon::AlignCharacterToCamera()
+// {
+// 	AMS_Player* Player = Cast<AMS_Player>(GetOwner());
+// 	
+// 	// 정상적을 캐스팅 됐는지 확인한다. 
+// 	if (!Player) return ;
+// 	
+// 	AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(Player->GetController());
+// 	
+// 	if (PlayerController)
+// 	{
+// 		// 카메라의 방향으로 플레이어도 회전한다. 
+// 		// FRotator ControlRot = PlayerController->GetControlRotation();
+// 		// FRotator NewRot()
+// 	}
+// }
 
 void AMS_Weapon::PlayMuzzleFlash()
 {

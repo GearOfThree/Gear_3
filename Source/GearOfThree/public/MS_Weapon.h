@@ -85,7 +85,7 @@ public:
 protected:
 	void FireTowards(const FVector& AimPoint);
 	
-	void AlignCharacterToCamera();
+	// void AlignCharacterToCamera();
 	
 	void PlayMuzzleFlash();
 	

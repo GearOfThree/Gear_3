@@ -147,6 +147,7 @@ public:
 	
 	bool bCachedDefaults = false;
 	bool bWantsADS = false;
+	// bool bIsFiring = false;
 	
 public:
 	bool IsWantsADS() const;
@@ -257,5 +258,7 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "NPC | AI")
 	class UCombatDialogueComponent* CombatDialogueComponent;
+	
+	// void AlignCharacterToCamera();
 };
 

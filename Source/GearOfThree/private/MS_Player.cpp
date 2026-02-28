@@ -153,6 +153,8 @@ void AMS_Player::Tick(float DeltaTime)
 
 	// 3) 스프링암 소켓 오프셋 보간 (어깨 시점 이동)
 	CameraBoom->SocketOffset = FMath::VInterpTo(CameraBoom->SocketOffset, TargetSocketOffset, DeltaTime, ADSInterpSpeed);
+
+	
 }
 
 
@@ -303,7 +305,10 @@ void AMS_Player::StartADS()
 	// TargetFOV = ADSFOV;
 	// TargetArmLength = ADSArmLength;
 	// TargetSocketOffset = ADSSocketOffset;
-
+	
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	
 	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
 	{
 		if (PlayerController->CrosshairWidget)
@@ -331,7 +336,10 @@ void AMS_Player::StopADS()
 	// TargetFOV = DefaultFOV;
 	// TargetArmLength = DefaultArmLength;
 	// TargetSocketOffset = DefaultSocketOffset;
-
+	
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	
 	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
 	{
 		if (PlayerController->CrosshairWidget)
@@ -554,6 +562,12 @@ void AMS_Player::FirstWeaponSpawn(EWeaponDirection direction)
 		WeaponSocketName
 	);
 }
+
+//
+// void AMS_Player::AlignCharacterToCamera()
+// {
+// 	if (Controller)
+// }
 
 // 중계 함수
 void AMS_Player::HandleFire()
