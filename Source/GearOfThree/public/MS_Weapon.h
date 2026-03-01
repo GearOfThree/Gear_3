@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MS_Bullet.h"
+#include "MS_RecoilSpec.h"
 #include "GameFramework/Actor.h"
 #include "NiagaraSystem.h"
 #include "MS_Weapon.generated.h"
@@ -73,6 +74,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float BulletRadius = 50.f;
 
+	// MS_RecoilSpec 클래스 호출변수
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Recoil")
+	FMS_RecoilSpec RecoilSpec;
 	
 public:
 	UFUNCTION(BlueprintPure, Category="Weapon")
@@ -80,16 +84,25 @@ public:
 	
 	// 총알 발사 처리함수
 	// MS_Player 에서 호출한다. 
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 	
 protected:
 	void FireTowards(const FVector& AimPoint);
-	
-	// void AlignCharacterToCamera();
 	
 	void PlayMuzzleFlash();
 	
 	void PlayFireSound();
 	
 	void EjectShell();
+	
+protected:
+	// 연사 패턴용 샷 인덱스
+	int32 ShotIndex = 0;
+
+	// 발사 끊겼을 때 인덱스 리셋용
+	float LastFireTime = -9999.f;
+
+	UPROPERTY(EditAnywhere, Category="Weapon|Recoil")
+	float ShotResetDelay = 0.25f; // 0.25초 이상 안 쏘면 패턴 초기화
 };
