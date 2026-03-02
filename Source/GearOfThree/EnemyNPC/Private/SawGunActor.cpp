@@ -57,12 +57,14 @@ void ASawGunActor::Fire()
 		SpawnRotation = RandomDirection.Rotation();
 	}
 
-	// 5. 스폰 파라미터 및 발사
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = WeaponOwner;
-	SpawnParams.Instigator = WeaponOwner;
-
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzlePos, SpawnRotation, SpawnParams);
+	//GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzlePos, SpawnRotation, SpawnParams);
+	AGearProjectile* ProjectileToFire = GetPooledProjectile();
+	
+	if (ProjectileToFire)
+	{
+		// 탄약고에서 꺼낸 총알을 해당 위치와 각도로 깨웁니다!!
+		ProjectileToFire->ActivateProjectile(MuzzlePos, SpawnRotation);
+	}
 	
 	if (MuzzleFlashEffect && WeaponMesh)
 	{

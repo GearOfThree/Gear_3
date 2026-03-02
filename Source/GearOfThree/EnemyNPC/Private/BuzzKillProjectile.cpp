@@ -1,238 +1,201 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BuzzKillProjectile.h"
-
 #include "GearCharacter.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 ABuzzKillProjectile::ABuzzKillProjectile()
 {
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = true;
+    
+    // (CreateDefaultSubobject만 생략하고, 부모의 ProjectileMesh를 그대로 활용합니다)
+    if (ProjectileMesh)
+    {
+        ProjectileMesh->SetupAttachment(nullptr);
+        SetRootComponent(ProjectileMesh); // 메쉬를 Root로!
 
-	// 메쉬를 Root로
-	SawMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SawMesh"));
-	RootComponent = SawMesh;
-    
-	// 충돌체는 메쉬 아래에 붙여줍니다 (SetupAttachment)
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(5.0f);
-	CollisionComp->SetupAttachment(RootComponent);
-	
-	// 충돌 이벤트 바인딩
-	CollisionComp->OnComponentHit.AddDynamic(this, &ABuzzKillProjectile::OnHit); 
-    
-	// 외형 및 물리 설정 유지
-	SawMesh->SetRelativeScale3D(FVector(0.0007f));
-	SawMesh->SetSimulatePhysics(true);
-	SawMesh->SetEnableGravity(false);
-	SawMesh->SetLinearDamping(0.1f);
-    
-	// 여기서 Hit 이벤트를 켤 거면 확실하게 세팅
-	SawMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
-	SawMesh->SetNotifyRigidBodyCollision(true); // "충돌 시 이벤트를 발생시켜라!"
-	SawMesh->BodyInstance.bUseCCD = true; 
-    
-	SawMesh->BodyInstance.bLockZRotation = true;
-	SawMesh->BodyInstance.bLockXRotation = true;
-	SawMesh->BodyInstance.bLockYRotation = true;
-	
-	// 궤적 이펙트 컴포넌트 생성 및 부착
-	TrailEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailEffectComp"));
-	TrailEffectComp->SetupAttachment(RootComponent); // 루트(충돌체)를 따라다니게 세팅
+        ProjectileMesh->SetRelativeScale3D(FVector(0.0007f));
+        ProjectileMesh->SetSimulatePhysics(true);
+        ProjectileMesh->SetEnableGravity(false);
+        ProjectileMesh->SetLinearDamping(0.1f);
+
+        ProjectileMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
+        ProjectileMesh->SetNotifyRigidBodyCollision(true);
+        
+        ProjectileMesh->OnComponentHit.AddDynamic(this, &ABuzzKillProjectile::OnHit);
+        
+        ProjectileMesh->BodyInstance.bUseCCD = true;
+        ProjectileMesh->BodyInstance.bLockZRotation = true;
+        ProjectileMesh->BodyInstance.bLockXRotation = true;
+        ProjectileMesh->BodyInstance.bLockYRotation = true;
+    }
+
+    if (CollisionComp)
+    {
+        CollisionComp->InitSphereRadius(5.0f);
+        CollisionComp->SetupAttachment(ProjectileMesh);
+        CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+
+    if (TrailEffectComp)
+    {
+        TrailEffectComp->SetupAttachment(ProjectileMesh);
+    }
+    if (ProjectileMovement)
+    {
+        // 🚨 부모가 물려준 이동 컴포넌트의 전원을 완전히 뽑아버립니다!
+        ProjectileMovement->Deactivate(); 
+        ProjectileMovement->SetUpdatedComponent(nullptr); 
+    }
 }
 
-// Called when the game starts or when spawned
 void ABuzzKillProjectile::BeginPlay()
 {
-	Super::BeginPlay();
-	
-	// Hit 이벤트 바인딩
-	SawMesh->OnComponentHit.AddDynamic(this, &ABuzzKillProjectile::OnHit);
-	
-	// 발사 시 물리적 힘 가하기
-	if (SawMesh)
-	{
-		// 보는 방향(Forward)으로 밀기
-		FVector ImpulseDir = GetActorForwardVector();
-		SawMesh->AddImpulse(ImpulseDir * LaunchPower, NAME_None, true);
+    Super::BeginPlay();
+}
 
-		// Y축 기준으로 팽이처럼 돌리기
-		FVector TorqueDir = FVector(0.0f, 1.0f, 0.0f); 
-		SawMesh->AddTorqueInRadians(TorqueDir * SpinPower, NAME_None, true);
-	}
-	if (GetInstigator()) 
-	{
-		// 톱날 메쉬가 주인의 캡슐/메쉬를 무시하게 함
-		SawMesh->IgnoreActorWhenMoving(GetInstigator(), true);
-		
-		// 주인도 톱날을 무시하게 함 (양방향 무시)
-		GetInstigator()->MoveIgnoreActorAdd(this);
-	}
-	if (GetOwner())
-	{
-		SawMesh->IgnoreActorWhenMoving(GetOwner(), true);
-	}
+// 톱날 깨우기
+void ABuzzKillProjectile::ActivateProjectile(FVector SpawnLocation, FRotator SpawnRotation)
+{
+    // 부모의 ProjectileMovement가 켜지면 물리 엔진과 충돌해서 공중에 멈춰버립니다.
+    
+    bIsActive = true;
+    SetActorHiddenInGame(false); // 눈에 보이게 켜기
+
+    if (ProjectileMesh)
+    {
+       // 1. 충돌을 끈 상태로 순간이동 먼저! (캐릭터 몸통에 걸리는 것 방지)
+       ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+       SetActorLocationAndRotation(SpawnLocation, SpawnRotation, false, nullptr, ETeleportType::TeleportPhysics);
+
+       // 2. 주인(쏜 사람) 무시 확실하게 세팅
+       if (GetInstigator()) 
+       {
+           ProjectileMesh->IgnoreActorWhenMoving(GetInstigator(), true);
+           GetInstigator()->MoveIgnoreActorAdd(this);
+       }
+       if (GetOwner())
+       {
+           ProjectileMesh->IgnoreActorWhenMoving(GetOwner(), true);
+       }
+
+       // 3. 이동이 끝난 후 물리 및 충돌 켜기
+       ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+       ProjectileMesh->SetSimulatePhysics(true);
+       ProjectileMesh->WakeAllRigidBodies();
+
+       // 4. 이전 속도 초기화
+       ProjectileMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+       ProjectileMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+
+       // 5. 뻥 차기! (이제 방해꾼이 없어서 무조건 날아갑니다)
+       FVector ImpulseDir = SpawnRotation.Vector(); 
+       ProjectileMesh->AddImpulse(ImpulseDir * LaunchPower, NAME_None, true);
+
+       FVector TorqueDir = FVector(0.0f, 1.0f, 0.0f); 
+       ProjectileMesh->AddTorqueInRadians(TorqueDir * SpinPower, NAME_None, true);
+    }
+}
+
+// 💤 톱날 재우기 (풀링 대기)
+void ABuzzKillProjectile::DeactivateProjectile()
+{
+    // 여기도 Super::DeactivateProjectile() 금지
+    
+    bIsActive = false;
+    SetActorHiddenInGame(true); // 눈에 안 보이게 숨기기
+
+    if (ProjectileMesh)
+    {
+        // 허공에 멈춰있게 하기 위해 속도 0으로 초기화
+        ProjectileMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        ProjectileMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+
+        // 물리 연산 끄고, 충돌도 완전히 꺼버림
+        ProjectileMesh->SetSimulatePhysics(false);
+        ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
 }
 
 void ABuzzKillProjectile::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
-	// 매 프레임 아래쪽으로 '약한 중력'을 가해줍니다.
-	if (SawMesh && SawMesh->IsSimulatingPhysics())
-	{
-		// 공식: F = m * a (힘 = 질량 * 가속도)
-		// 가속도 = 월드 중력(-980) * 우리가 원하는 배율(0.2)
-		float GravityZ = GetWorld()->GetGravityZ();
-		FVector CustomGravityForce = FVector(0.0f, 0.0f, GravityZ) * CustomGravityScale;
-		
-		// 액터의 질량을 곱해서 힘(Force)으로 변환해 적용
-		SawMesh->AddForce(CustomGravityForce * SawMesh->GetMass());
-		
-		LastFrameVelocity = SawMesh->GetPhysicsLinearVelocity();
-	}
-	
+    Super::Tick(DeltaTime);
+
+    // 💡 풀링 대기 중일 때는 연산하지 않음
+    if (!bIsActive) return; 
+
+    // 🚨 유저 원본 커스텀 중력 로직 유지!
+    if (ProjectileMesh && ProjectileMesh->IsSimulatingPhysics())
+    {
+        float GravityZ = GetWorld()->GetGravityZ();
+        FVector CustomGravityForce = FVector(0.0f, 0.0f, GravityZ) * CustomGravityScale;
+        
+        ProjectileMesh->AddForce(CustomGravityForce * ProjectileMesh->GetMass());
+        LastFrameVelocity = ProjectileMesh->GetPhysicsLinearVelocity();
+    }
 }
-
-/*void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-
-	 // 벽/천장 반사 (수동 계산)
-	
-	// 현재 입사 속도 (V) 가져오기
-	FVector IncomingVelocity = SawMesh->GetPhysicsLinearVelocity();
-
-	// 충돌 면의 법선 (N) 가져오기
-	FVector Normal = Hit.ImpactNormal;
-
-	// 반사 벡터 공식: R = V - 2(V dot N)N
-	// (내적을 통해 벽에 수직인 성분을 구하고, 그 2배만큼 반대 방향으로 뺍니다)
-	float DotProduct = FVector::DotProduct(IncomingVelocity, Normal);
-	FVector ReflectedVelocity = IncomingVelocity - (2 * DotProduct * Normal);
-
-	// 반발 계수 적용 (속도 조절)
-	ReflectedVelocity *= Bounciness;
-
-	// 물리 엔진에 강제 적용
-	// (물리 엔진의 기본 마찰력 계산을 무시하고 우리가 계산한 이상적인 반사각을 덮어씌웁니다)
-	SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
-	
-	// 바닥 감지 및 파괴
-	// 충돌한 면의 법선(Normal)의 Z값이 0.7 이상이면 평평한 바닥으로 간주합니다.
-	// (Normal.Z가 1이면 완전 평지, 0이면 수직 벽, -1이면 천장)
-	if (Hit.ImpactNormal.Z > 0.7f)
-	{
-		// 여기에 스파크나 먼지 이펙트를 스폰
-		// UGameplayStatics::SpawnEmitterAtLocation(...);
-
-		Destroy(); // 바닥이므로 사라짐
-		return;    // 함수 종료
-	}
-	
-	// [수정] 2. 반사각 계산 (직접 물리 구현)
-    
-	// 현재 속도(GetPhysicsLinearVelocity) 대신 '저장한 속도(LastFrameVelocity)' 사용
-	FVector IncomingVelocity = LastFrameVelocity; 
-
-	FVector Normal = Hit.ImpactNormal;
-
-	// 공식: R = V - 2(V dot N)N
-	float DotProduct = FVector::DotProduct(IncomingVelocity, Normal);
-	FVector ReflectedVelocity = IncomingVelocity - (2 * DotProduct * Normal);
-
-	// 반발 계수 적용
-	ReflectedVelocity *= Bounciness;
-
-	// 3. 강제로 새 속도 할당
-	SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
-    
-	// (Clipping 방지)
-	// 가끔 톱날이 벽 안에 파묻혀서 못 나오는 걸 방지하기 위해 
-	// 반사 방향으로 아주 조금(1cm) 이동시킴.
-	FVector Nudge = Normal * 1.0f; 
-	SetActorLocation(GetActorLocation() + Nudge);
-	
-	// 디버그용: 튕기는 궤적 그리기
-	DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
-}*/
-
 
 void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    // 유효성 검사 (자기 자신 충돌 방지)
+    // 🚨 유저 원본 Hit 로직 100% 유지!
     if (!OtherActor || OtherActor == this) return;
-	
-	// 캐릭터 피아 식별 및 이펙트 처리
-	AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
-	if (HitCharacter)
-	{
-		AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
-        
-		// 아군이거나 쏜 사람 본인이면 무시 (관통)
-		if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
-		{
-			return; 
-		}
-
-		// 적대적 관계 명중 (사이언 -> 샐리, 혹은 플레이어 -> 사이언)
-		UE_LOG(LogTemp, Warning, TEXT("BuzzKill 명중 (Shooter: %s -> Victim: %s)"), *Shooter->GetName(), *HitCharacter->GetName());
-
-		// 맞은 대상에 따라 이펙트 분기
-		if (HitCharacter->GetTeamSide() == ETeamSide::Ally || HitCharacter->GetTeamSide() == ETeamSide::Player)
-		{
-			// 샐리나 플레이어가 맞았을 때 (아군 전용 피격 이펙트)
-			if (AllyHitEffect)
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-			}
-		}
-
-		// TODO: HitCharacter 체력 깎기 로직 추가 예정
-		Destroy(); 
-		return; 
-	}
-
-
-    // 환경(바닥) 충돌
-    // 충돌한 면의 법선(Normal)의 Z값이 0.7 이상이면 평평한 바닥으로 간주합니다.
-    if (Hit.ImpactNormal.Z > 0.7f)
+    
+    AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
+    if (HitCharacter)
     {
-       // 바닥에 부딪혀 파괴될 때도 스파크를 튀기게 설정
-       if (BounceSparkEffect)
-       {
-           UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-       }
-       Destroy(); // 바닥이므로 사라짐
-       return;    
+        AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
+        
+        if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
+        {
+            return;
+        }
+
+        UE_LOG(LogTemp, Warning, TEXT("BuzzKill 명중 (Shooter: %s -> Victim: %s)"), *Shooter->GetName(), *HitCharacter->GetName());
+
+        if (HitCharacter->GetTeamSide() == ETeamSide::Ally || HitCharacter->GetTeamSide() == ETeamSide::Player)
+        {
+            if (AllyHitEffect)
+            {
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+            }
+        }
+
+        // TODO: HitCharacter 체력 깎기 로직 추가 예정
+        DeactivateProjectile(); // 💡 Destroy() -> DeactivateProjectile() 교체
+        return;
     }
 
+    if (Hit.ImpactNormal.Z > 0.7f)
+    {
+        if (BounceSparkEffect)
+        {
+            UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+        }
+        DeactivateProjectile(); // 💡 Destroy() -> DeactivateProjectile() 교체
+        return;
+    }
 
-    // 벽/천장 반사 물리 및 스파크 이펙트
-    
-    // [VFX] 벽 반사 스파크 이펙트 재생
     if (BounceSparkEffect)
     {
         UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
     }
 
-    // 반사각 계산 (직접 물리 구현)
-    FVector IncomingVelocity = LastFrameVelocity; 
+    // 🚨 유저 원본 반사각 계산 로직 유지!
+    FVector IncomingVelocity = LastFrameVelocity;
     FVector Normal = Hit.ImpactNormal;
 
     float DotProduct = FVector::DotProduct(IncomingVelocity, Normal);
     FVector ReflectedVelocity = IncomingVelocity - (2 * DotProduct * Normal);
     ReflectedVelocity *= Bounciness;
 
-    // 강제로 새 속도 할당
-    if (SawMesh) 
+    if (ProjectileMesh)
     {
-        SawMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
+        ProjectileMesh->SetPhysicsLinearVelocity(ReflectedVelocity);
     }
     
-    // (Clipping 방지)
-    FVector Nudge = Normal * 1.0f; 
+    FVector Nudge = Normal * 1.0f;
     SetActorLocation(GetActorLocation() + Nudge);
-    
     DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
 }

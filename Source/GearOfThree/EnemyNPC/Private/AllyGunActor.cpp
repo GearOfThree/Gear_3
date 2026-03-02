@@ -69,16 +69,15 @@ void AAllyGunActor::Fire()
         SpawnRotation = RandomDirection.Rotation();
     }
 
-    // 총알 스폰 파라미터
-    FActorSpawnParameters SpawnParams;
-    SpawnParams.Owner = OwnerNPC;
-    SpawnParams.Instigator = OwnerNPC;
-    //총알이 벽이나 총기 모델에 겹쳐도 강제로 스폰시킴
-    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
     // 스폰
-    AAllyProjectile* SpawningBullet = GetWorld()->SpawnActor<AAllyProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
+    //AAllyProjectile* SpawningBullet = GetWorld()->SpawnActor<AAllyProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, SpawnParams);
     
+    AGearProjectile* ProjectileToFire = GetPooledProjectile();
+    if (ProjectileToFire)
+    {
+        // 탄약고에서 꺼낸 총알을 해당 위치와 각도로 깨웁니다!!
+        ProjectileToFire->ActivateProjectile(SpawnLocation, SpawnRotation);
+    }
     if (MuzzleFlashEffect && WeaponMesh)
     {
         UNiagaraFunctionLibrary::SpawnSystemAttached(

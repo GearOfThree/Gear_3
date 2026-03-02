@@ -1,5 +1,4 @@
 #include "AllyProjectile.h"
-
 #include "GearCharacter.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
@@ -7,80 +6,96 @@
 
 AAllyProjectile::AAllyProjectile()
 {
-	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	CollisionComp->InitSphereRadius(5.0f);
-    
-	// 🚨 [추가된 핵심 코드] 물리 충돌 확실하게 켜기!
-	CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic")); // 모든 동적 물체와 부딪힘
-	CollisionComp->SetNotifyRigidBodyCollision(true); // "부딪히면 OnHit을 반드시 호출해라!"
-    
-	CollisionComp->OnComponentHit.AddDynamic(this, &AAllyProjectile::OnHit);
-	RootComponent = CollisionComp;
-	CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
-    
-	// 외형 설정
-	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh"));
-	ProjectileMesh->SetupAttachment(RootComponent);
-	ProjectileMesh->SetRelativeScale3D(FVector(0.5f));
-	ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 메쉬는 충돌 계산 끄기 (최적화)
+    if (CollisionComp)
+    {
+       // 물리 충돌 프로필 및 오너 무시 설정
+       CollisionComp->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+       CollisionComp->SetNotifyRigidBodyCollision(true);
+    }
 
-	// 이동 설정
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = 3000.f;
-	ProjectileMovement->MaxSpeed = 3000.f;
-	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->ProjectileGravityScale = 0.0f;
+    if (ProjectileMesh)
+    {
+       // 샐리 총알 메쉬 크기와 충돌 끄기
+       ProjectileMesh->SetRelativeScale3D(FVector(0.5f));
+       ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
 
-	InitialLifeSpan = 3.0f;
-	
-	// 궤적 이펙트 컴포넌트 생성 및 부착
-	TrailEffectComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TrailEffectComp"));
-	TrailEffectComp->SetupAttachment(RootComponent); // 루트(충돌체)를 따라다니게 세팅
+    if (ProjectileMovement)
+    {
+       // 샐리 총알은 중력의 영향을 받지 않고 일직선으로 날아감
+       ProjectileMovement->ProjectileGravityScale = 0.0f;
+    }
 }
 
 void AAllyProjectile::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	// 총알 자체의 콜리전이 주인을 무시하도록 설정
-	if (GetOwner())
-	{
-		CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
-	}
+    // 총알 자체의 콜리전이 주인을 무시하도록 설정
+    if (GetOwner() && CollisionComp)
+    {
+       CollisionComp->IgnoreActorWhenMoving(GetOwner(), true);
+    }
 }
 
 void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (!OtherActor || OtherActor == this) return;
+    if (!OtherActor || OtherActor == this) return;
 
-	if (AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor)) // 캐릭터(아군 or 적군)를 맞춘 경우
-	{
-		// 피아 식별 로직 (이전과 동일)
-		AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
-		if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
-		{
-			return; // 아군은 관통
-		}
+    if (AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor)) // 캐릭터를 맞춘 경우
+    {
+       AGearCharacter* Shooter = Cast<AGearCharacter>(GetInstigator());
+       
+       // 아군이거나 쏜 사람 본인이면 무시 (관통)
+       if (Shooter && (Shooter == HitCharacter || !Shooter->IsHostile(HitCharacter)))
+       {
+          return; 
+       }
 
-		// 맞은 캐릭터의 팀을 확인하고 이펙트 스폰
-		if (HitCharacter->GetTeamSide() == ETeamSide::Enemy)
-		{
-			// 적(사이언) 명중!
-			if (EnemyHitEffect) 
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EnemyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-			}
-		}
-	}
-	else // 캐릭터가 아닌 벽/바닥을 맞춘 경우
-	{
-		// 벽 피격 이펙트
-		if (WallHitEffect)
-		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), WallHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-		}
-	}
+       // 적(사이언) 명중!
+       if (HitCharacter->GetTeamSide() == ETeamSide::Enemy)
+       {
+          if (EnemyHitEffect) 
+          {
+             UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EnemyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+          }
+          
+          // TODO: 나중에 여기에 데미지 주는 로직 한 줄 추가 (DamageComp->TakeCustomDamage(...))
+       }
+    }
+    else // 캐릭터가 아닌 벽/바닥을 맞춘 경우
+    {
+       // 벽 피격 이펙트
+       if (WallHitEffect)
+       {
+          UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), WallHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+       }
+    }
 
-	Destroy(); 
+    // 🚨 [핵심 수정] Destroy()를 지우고, 총알을 재워서 탄약고(Pool)로 돌려보냅니다!
+    DeactivateProjectile(); 
+}
+
+void AAllyProjectile::ActivateProjectile(FVector SpawnLocation, FRotator SpawnRotation)
+{
+   // 1. 부모의 기본 발사 로직 실행 (위치 이동, 보이기, 물리 이동 시작 등)
+   Super::ActivateProjectile(SpawnLocation, SpawnRotation);
+
+   // "3초 뒤에 DeactivateProjectile 함수를 실행"
+   GetWorld()->GetTimerManager().SetTimer(
+       DeactivateTimerHandle, 
+       this, 
+       &AAllyProjectile::DeactivateProjectile, 
+       3.0f, 
+       false
+   );
+}
+
+// (3초가 지났거나, OnHit에서 호출되었거나)
+void AAllyProjectile::DeactivateProjectile()
+{
+   // 부모의 기본 수면 로직 실행 (숨기기, 물리 이동 정지 등)
+   Super::DeactivateProjectile();
+   
+   GetWorld()->GetTimerManager().ClearTimer(DeactivateTimerHandle);
 }

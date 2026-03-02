@@ -17,9 +17,6 @@ public:
 	virtual void Fire() override;
 
 protected:
-	// 톱날 투사체 클래스
-	UPROPERTY(EditAnywhere, Category = "Weapon | Combat")
-	TSubclassOf<class ABuzzKillProjectile> ProjectileClass;
 	
 	// 🔹 총구 화염 이펙트 (블루프린트에서 나이아가라 에셋 지정)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
