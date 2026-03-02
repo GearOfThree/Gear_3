@@ -248,6 +248,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	void Jump();
+	void StopJumping();
 	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
