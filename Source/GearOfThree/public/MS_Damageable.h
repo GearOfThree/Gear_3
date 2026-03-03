@@ -1,4 +1,4 @@
-
+#pragma once
 #include "MS_Damageable.generated.h"
 
 UINTERFACE(BlueprintType)
