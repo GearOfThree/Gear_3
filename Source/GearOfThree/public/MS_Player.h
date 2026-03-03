@@ -22,7 +22,7 @@ struct FInputActionValue;
  *  Implements a controllable orbiting camera
  */
 UCLASS()
-class AMS_Player : public AGearCharacter // 초점 이동 불가능
+class AMS_Player : public AGearCharacter
 {
 	GENERATED_BODY()
 
@@ -147,9 +147,10 @@ public:
 	
 	bool bCachedDefaults = false;
 	bool bWantsADS = false;
+	// bool bIsFiring = false;
 	
 public:
-	bool IsWantsADS() const;
+	// bool IsWantsADS() const;
 	
 protected: // 무기 관련 내용
 	
@@ -171,8 +172,11 @@ protected: // 무기 관련 내용
 	UPROPERTY(Transient)
 	TMap<EWeaponDirection, TObjectPtr<AMS_Weapon>> WeaponMap;
 
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	// USkeletalMeshComponent* WeaponMeshComp;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	USkeletalMeshComponent* WeaponMeshComp;
+	UStaticMeshComponent* WeaponMeshComp;
 	
 	UPROPERTY()
 	TMap<EWeaponDirection, FMS_WeaponSlotData> WeaponSlotDataMap;
@@ -186,6 +190,53 @@ protected: // 무기 관련 내용
 	UPROPERTY(EditDefaultsOnly, Category="Weapon")
 	TSubclassOf<AMS_Weapon> AK105WeaponClass;
 
+protected: // 카메라 반동 설정
+	
+	// 누적 목표(튀어야 하는 총량)
+	FVector2D RecoilTarget = FVector2D::ZeroVector;     // (Pitch, Yaw)
+	// 실제 적용 중(보간으로 따라감)
+	FVector2D RecoilCurrent = FVector2D::ZeroVector;
+
+	// Tick에서 delta 적용을 위해 이전 값 저장
+	FVector2D RecoilPrev = FVector2D::ZeroVector;
+
+	// 연사 누적 배수
+	float SustainMul = 1.0f;
+
+	// 최근 발사 시각 (Sustain 복구에 사용)
+	float LastRecoilTime = -9999.f;
+	
+	// 마지막으로 받은 스펙 일부(복구 속도 등 Tick에서 필요)
+	float CameraReturnSpeed = 18.0f;
+	float SustainDecaySpeed = 8.0f;
+	
+	// 쉐이크
+	TSubclassOf<class UCameraShakeBase> FireShakeClass = nullptr;
+	float PendingShakeScale = 1.0f;
+	
+protected: // 총기 반동 설정
+	FVector WeaponKickTargetLoc = FVector::ZeroVector;
+	FRotator WeaponKickTargetRot = FRotator::ZeroRotator;
+
+	FVector WeaponKickCurrentLoc = FVector::ZeroVector;
+	FRotator WeaponKickCurrentRot = FRotator::ZeroRotator;
+	
+	// 총기 위치 복구 기준점
+	FVector WeaponBaseLoc = FVector::ZeroVector;
+	FRotator WeaponBaseRot = FRotator::ZeroRotator;
+	
+	// 마지막으로 받은 스펙 일부(복구 속도 등 Tick에서 필요)
+	float WeaponKickInSpeed = 35.0f;
+	float WeaponReturnSpeed = 22.0f;
+	
+private: // 반동 설정
+	
+	void ResolveWeaponMeshComponent();
+	void ApplyCameraRecoilTick(float DeltaTime);
+	void ApplyWeaponKickTick(float DeltaTime);
+	void DecaySustainTick(float DeltaTime);
+	void PlayPendingShake();
+	
 public:
 
 	// 생성자
@@ -197,6 +248,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	void Jump();
+	void StopJumping();
 	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -257,5 +310,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "NPC | AI")
 	class UCombatDialogueComponent* CombatDialogueComponent;
+	
+	// MS_Weapon 에서 호출한다. 
+	void ApplyRecoilFromWeapon(const FMS_RecoilSpec& Spec, int32 ShotIndex, bool bIsADS);
 };
 
