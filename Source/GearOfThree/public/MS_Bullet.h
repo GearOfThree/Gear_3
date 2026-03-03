@@ -40,9 +40,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="FX|Cascade")
 	TObjectPtr<UParticleSystem> ImpactFX;
 	
-	// 미소 : 다시 확인할 내용
 	UFUNCTION()
 	void OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 					 UPrimitiveComponent* OtherComp, FVector NormalImpulse,
 					 const FHitResult& Hit);
+	
+	UPROPERTY(EditDefaultsOnly, Category=Power)
+	float Power = 10;
 };

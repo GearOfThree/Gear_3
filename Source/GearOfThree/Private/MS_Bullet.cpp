@@ -3,6 +3,9 @@
 
 #include "MS_Bullet.h"
 
+#include "GearCharacter.h"
+#include "MS_Damageable.h"
+#include "MS_DamageableCharacter.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -86,8 +89,31 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 
 	DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 20.f, 12, FColor::Red, false, 2.f);
 	
-	// 자기 자신 충돌 방지
+	// 총알이 총알 자체와 부딪혔는지 확인한다.
 	if (!OtherActor || OtherActor == this) return;
+	
+	// GearCharacter 를 상속 받고 있는 대상인지 확인한다.
+	AMS_DamageableCharacter* Character = Cast<AMS_DamageableCharacter>(OtherActor);
+	if (!Character) return; 
+	
+	// UMS_Damageable 를 구현하고 있는지 확인한다. && TeamSide 가 Enemy 인지 확인한다. 
+	if (OtherActor->Implements<UMS_Damageable>() && Character->TeamSide == ETeamSide::Enemy)
+	{
+		// 1 : 함수를 실행할 대상 객체
+		// 2 : float Damage 
+		// 3 : AActor* DamageCauser
+		IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
+		
+		DrawDebugString(
+			GetWorld(),
+			GetActorLocation() + FVector(0,0,100),
+			TEXT(""),
+			nullptr,
+			FColor::White,
+			2.0f,
+			true
+		);	
+	}
 	
 	if (ImpactFX)
 	{

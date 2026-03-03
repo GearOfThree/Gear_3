@@ -104,6 +104,7 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 	// MS_Player 에 접근해서 현재 조준하고 있는 상태인지 가져오기 위해서 접근한다. 
 	AMS_Player* Player = Cast<AMS_Player>(GetOwner());
 	
+	// 발사 조건이 맞는지 체크한다. 
 	if (!BulletFactory || !FirePosition || !Player->bWantsADS) return;
 	
 	const FVector MuzzleLoc = FirePosition->GetComponentLocation();
@@ -188,11 +189,23 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 		if (!IsValid(Bullet)) return;
 		DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Cyan, false, 3.f);
 	}, 0.2f, false);
-	const FVector V = mesh->GetPhysicsLinearVelocity();
+	// const FVector V = mesh->GetPhysicsLinearVelocity();
 	
 	PlayMuzzleFlash();
 	PlayFireSound();
 	EjectShell();
+	
+	// 패턴/연사용 샷 인덱스 리셋
+	const float Now = GetWorld()->GetTimeSeconds();
+	if (Now - LastFireTime > ShotResetDelay)
+	{
+		ShotIndex = 0;
+	}
+	LastFireTime = Now;
+	
+	Player->ApplyRecoilFromWeapon(RecoilSpec, ShotIndex, Player->bWantsADS);
+	
+	ShotIndex++;
 }
 
 void AMS_Weapon::PlayMuzzleFlash()

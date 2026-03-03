@@ -13,12 +13,12 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
-#include "AnimNodes/AnimNode_RandomPlayer.h"
 #include "Blueprint/UserWidget.h"
 #include "public/MS_PlayerController.h"
 #include "public/MS_WeaponWheelWidget.h"
 #include "public/MS_Weapon.h"
-#include "Tools/UEdMode.h"
+
+
 
 AMS_Player::AMS_Player()
 {
@@ -58,7 +58,7 @@ AMS_Player::AMS_Player()
 	FollowCamera->bUsePawnControlRotation = false;
 	
 	// 총 스케레탈 메시 컴포넌트 등록
-	WeaponMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMeshComp"));
+	WeaponMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMeshComp"));
 	WeaponMeshComp->SetupAttachment(GetMesh(), TEXT("WeaponSocket")); // 손 소켓
 	WeaponMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
@@ -102,6 +102,14 @@ void AMS_Player::BeginPlay()
 	
 	// #################### 무기 관련 ####################
 	
+	ResolveWeaponMeshComponent();
+	
+	if (WeaponMeshComp)
+	{
+		WeaponBaseLoc = WeaponMeshComp->GetRelativeLocation();
+		WeaponBaseRot = WeaponMeshComp->GetRelativeRotation();
+	}
+	
 	TMap<EWeaponDirection, FMS_WeaponSlotData> DataMap;
 	
 	{
@@ -119,10 +127,12 @@ void AMS_Player::BeginPlay()
 	
 	FirstWeaponSpawn(EWeaponDirection::Left);
 	
-	// if (CombatDialogueComponent)
-	// {
-	// 	CombatDialogueComponent->StartCombatDialogue();
-	// }
+	// #################### 플레이중 음성 자막 설정 ####################
+	
+	if (CombatDialogueComponent)
+	{
+		CombatDialogueComponent->StartCombatDialogue();
+	}
 }
 
 void AMS_Player::Tick(float DeltaTime)
@@ -153,6 +163,11 @@ void AMS_Player::Tick(float DeltaTime)
 
 	// 3) 스프링암 소켓 오프셋 보간 (어깨 시점 이동)
 	CameraBoom->SocketOffset = FMath::VInterpTo(CameraBoom->SocketOffset, TargetSocketOffset, DeltaTime, ADSInterpSpeed);
+
+	DecaySustainTick(DeltaTime);
+	ApplyCameraRecoilTick(DeltaTime);
+	ApplyWeaponKickTick(DeltaTime);
+	PlayPendingShake();
 }
 
 
@@ -165,8 +180,8 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMS_Player::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMS_Player::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMS_Player::Move);
@@ -198,6 +213,16 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	{
 		UE_LOG(LogGearOfThree, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void AMS_Player::Jump()
+{
+	
+}
+
+void AMS_Player::StopJumping()
+{
+	
 }
 
 void AMS_Player::Move(const FInputActionValue& Value)
@@ -299,11 +324,10 @@ void AMS_Player::StartADS()
 
 	bWantsADS = true;
 	UE_LOG(LogTemp, Warning, TEXT("ADS=%d"), bWantsADS);
-	// 목표값을 ADS로
-	// TargetFOV = ADSFOV;
-	// TargetArmLength = ADSArmLength;
-	// TargetSocketOffset = ADSSocketOffset;
-
+	
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	
 	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
 	{
 		if (PlayerController->CrosshairWidget)
@@ -317,21 +341,14 @@ void AMS_Player::StartADS()
 void AMS_Player::StopADS()
 {
 	CachedDefaults_Base();
-
-	// UE_LOG(LogTemp, Warning, TEXT("bIsAiming=%d FollowCamera=%s FOV=%f TargetFOV=%f"),
-	// bWantsADS ? 1 : 0,
-	// *GetNameSafe(FollowCamera),
-	// FollowCamera ? FollowCamera->FieldOfView : -1.f,
-	// TargetFOV);
 	
 	// 플레그 값
 	bWantsADS = false;
 	UE_LOG(LogTemp, Warning, TEXT("ADS=%d"), bWantsADS);
-	// 목표값을 기본으로
-	// TargetFOV = DefaultFOV;
-	// TargetArmLength = DefaultArmLength;
-	// TargetSocketOffset = DefaultSocketOffset;
-
+	
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	
 	if (AMS_PlayerController* PlayerController = Cast<AMS_PlayerController>(GetController()))
 	{
 		if (PlayerController->CrosshairWidget)
@@ -339,10 +356,6 @@ void AMS_Player::StopADS()
 			PlayerController->CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
-	
-	// (선택) 원복
-	// bUseControllerRotationYaw = false;
-	// GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 void AMS_Player::CachedDefaults_Base()
@@ -356,10 +369,15 @@ void AMS_Player::CachedDefaults_Base()
 	bCached = true;
 }
 
-// bool AMS_Player::IsWantsADS() const
-// {
-// 	return bWantsADS;
-// }
+void AMS_Player::ResolveWeaponMeshComponent()
+{
+	UActorComponent* Component = GetComponentByClass(UStaticMeshComponent::StaticClass());
+	if (Component->GetName().Contains(TEXT("WeaponMeshComp")))
+	{
+		WeaponMeshComp = Cast<UStaticMeshComponent>(Component);
+		
+	}
+}
 
 
 // ############################ 무기 선택 ############################
@@ -480,9 +498,6 @@ void AMS_Player::EquipWeapon(EWeaponDirection direction)
 		return;
 	}
 	
-	// WeaponMeshComp->SetSkeletalMesh(Data->WeaponMesh);
-	// UE_LOG(LogTemp, Warning, TEXT("Equipped: %s"), *Data->DisplayName.ToString());
-	
 	// 기존 무기 제거 
 	if (IsValid(CurrentWeaponRef))
 	{
@@ -562,4 +577,135 @@ void AMS_Player::HandleFire()
 	{
 		CurrentWeaponRef->Fire();
 	}
+}
+
+void AMS_Player::ApplyRecoilFromWeapon(const FMS_RecoilSpec& Spec, int32 ShotIndex, bool bIsADS)
+{
+	// === 저장(틱에서 복구 속도 등 필요) ===
+	CameraReturnSpeed = Spec.ReturnSpeed;
+	SustainDecaySpeed = Spec.SustainDecaySpeed;
+	WeaponKickInSpeed = Spec.WeaponKickInSpeed;
+	WeaponReturnSpeed = Spec.WeaponReturnSpeed;
+	
+	// === 연사 누적 배수 업데이트 ===
+	SustainMul = FMath::Clamp(SustainMul + Spec.SustainPerShot, 1.0f, Spec.SustainMax);
+	LastRecoilTime = GetWorld()->GetTimeSeconds();
+
+	// === 이번 샷의 (Pitch, Yaw) 계산 ===
+	float PitchKick = 0.f;
+	float YawKick = 0.f;
+	
+	const bool bUsePattern = (Spec.Pattern.Num() > 0);
+	if (bUsePattern)
+	{
+		const int32 Index = ShotIndex % Spec.Pattern.Num();
+		PitchKick = Spec.Pattern[Index].X;
+		YawKick = Spec.Pattern[Index].Y;
+	}
+	else
+	{
+		PitchKick = FMath::RandRange(Spec.PitchKickMin, Spec.PitchKickMax);
+		YawKick   = FMath::RandRange(Spec.YawKickMin, Spec.YawKickMax);
+	}
+	
+	// ADS 보정
+	const float ADSMul = bIsADS ? Spec.ADS_Multiplier : 1.0f;
+
+	PitchKick *= ADSMul * SustainMul;
+	YawKick   *= ADSMul * SustainMul;
+
+	// === 카메라 목표 누적 ===
+	// Pitch는 위로 튀는 느낌을 위해 "Target에 +"
+	RecoilTarget.X += PitchKick;
+	RecoilTarget.Y += YawKick;
+
+	// === 무기 메시 킥백 목표 ===
+	// -X로 뒤로, +Z로 살짝 위로 (너 무기 축이 다르면 조정)
+	const float KickDist = Spec.KickbackDistance * ADSMul;
+	const float KickUp   = Spec.KickbackUp * ADSMul;
+	const float KickRotP = Spec.KickRotPitch * ADSMul;
+
+	WeaponKickTargetLoc += FVector(-KickDist, 0.f, KickUp);
+	WeaponKickTargetRot += FRotator(-KickRotP, 0.f, 0.f);
+
+	// === 카메라 쉐이크 예약 ===
+	FireShakeClass = Spec.FireShake;
+	PendingShakeScale = bIsADS ? Spec.ADS_ShakeScale : Spec.ShakeScale;
+}
+
+void AMS_Player::DecaySustainTick(float DeltaTime)
+{
+	// 마지막 반동 이후 시간이 지나면 SustainMul이 1.0으로 복귀
+	const float Now = GetWorld()->GetTimeSeconds();
+	const float Since = Now - LastRecoilTime;
+
+	// 0.12초 정도 지나면 복구 시작(취향값)
+	if (Since > 0.12f)
+	{
+		SustainMul = FMath::FInterpTo(SustainMul, 1.0f, DeltaTime, SustainDecaySpeed);
+	}
+}
+
+void AMS_Player::ApplyCameraRecoilTick(float DeltaTime)
+{
+	// (1) RecoilCurrent가 RecoilTarget을 따라가게 보간
+	RecoilCurrent.X = FMath::FInterpTo(RecoilCurrent.X, RecoilTarget.X, DeltaTime, 30.0f); // 튀는 속도(고정/취향)
+	RecoilCurrent.Y = FMath::FInterpTo(RecoilCurrent.Y, RecoilTarget.Y, DeltaTime, 30.0f);
+
+	// (2) 이번 프레임에 증가한 만큼만 컨트롤 입력으로 적용 (중요!)
+	const FVector2D Delta = RecoilCurrent - RecoilPrev;
+
+	AController* C = GetController();
+	if (C)
+	{
+		// Pitch: 화면 위로 튀려면 보통 Pitch를 "음수"로 넣음(게임마다 축이 다를 수 있음)
+		AddControllerPitchInput(-Delta.X);
+		AddControllerYawInput(Delta.Y);
+	}
+
+	RecoilPrev = RecoilCurrent;
+
+	// (3) Target을 0으로 되돌리기(복구)
+	RecoilTarget.X = FMath::FInterpTo(RecoilTarget.X, 0.0f, DeltaTime, CameraReturnSpeed);
+	RecoilTarget.Y = FMath::FInterpTo(RecoilTarget.Y, 0.0f, DeltaTime, CameraReturnSpeed);
+
+	// (4) Current도 0쪽으로 같이 정리(잔 떨림 방지)
+	RecoilCurrent.X = FMath::FInterpTo(RecoilCurrent.X, 0.0f, DeltaTime, CameraReturnSpeed * 0.5f);
+	RecoilCurrent.Y = FMath::FInterpTo(RecoilCurrent.Y, 0.0f, DeltaTime, CameraReturnSpeed * 0.5f);
+	RecoilPrev = RecoilCurrent;
+}
+void AMS_Player::ApplyWeaponKickTick(float DeltaTime)
+{
+	if (!WeaponMeshComp)
+		return;
+
+	// Target은 0으로 복귀
+	WeaponKickTargetLoc = FMath::VInterpTo(WeaponKickTargetLoc, FVector::ZeroVector, DeltaTime, WeaponReturnSpeed);
+	WeaponKickTargetRot = FMath::RInterpTo(WeaponKickTargetRot, FRotator::ZeroRotator, DeltaTime, WeaponReturnSpeed);
+
+	// Current가 Target을 따라가며 “튐”
+	WeaponKickCurrentLoc = FMath::VInterpTo(WeaponKickCurrentLoc, WeaponKickTargetLoc, DeltaTime, WeaponKickInSpeed);
+	WeaponKickCurrentRot = FMath::RInterpTo(WeaponKickCurrentRot, WeaponKickTargetRot, DeltaTime, WeaponKickInSpeed);
+
+	// 베이스 + 킥 적용
+	WeaponMeshComp->SetRelativeLocation(WeaponBaseLoc + WeaponKickCurrentLoc);
+	WeaponMeshComp->SetRelativeRotation((WeaponBaseRot + WeaponKickCurrentRot).Quaternion());
+}
+
+void AMS_Player::PlayPendingShake()
+{
+	if (!FireShakeClass)
+		return;
+
+	AMS_PlayerController* PC = Cast<AMS_PlayerController>(GetController());
+	if (!PC)
+	{
+		FireShakeClass = nullptr;
+		return;
+	}
+
+	PC->ClientStartCameraShake(FireShakeClass, PendingShakeScale);
+
+	// 1회만 실행
+	FireShakeClass = nullptr;
 }
