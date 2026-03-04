@@ -97,6 +97,12 @@ void ABuzzKillProjectile::ActivateProjectile(FVector SpawnLocation, FRotator Spa
        FVector TorqueDir = FVector(0.0f, 1.0f, 0.0f); 
        ProjectileMesh->AddTorqueInRadians(TorqueDir * SpinPower, NAME_None, true);
     }
+    
+    if (TrailEffectComp)
+    {
+        // 파라미터로 true를 넘겨주면 "기존 상태를 리셋하고 처음부터 다시 재생하라"는 뜻입니다.
+        TrailEffectComp->Activate(true); 
+    }
 }
 
 // 💤 톱날 재우기 (풀링 대기)
@@ -116,6 +122,11 @@ void ABuzzKillProjectile::DeactivateProjectile()
         // 물리 연산 끄고, 충돌도 완전히 꺼버림
         ProjectileMesh->SetSimulatePhysics(false);
         ProjectileMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
+    if (TrailEffectComp)
+    {
+        // 파라미터로 true를 넘겨주면 "기존 상태를 리셋하고 처음부터 다시 재생하라"는 뜻입니다.
+        TrailEffectComp->Deactivate(); 
     }
 }
 

@@ -39,7 +39,7 @@ void AGearProjectile::BeginPlay()
 
 void AGearProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    // 부모는 아무것도 안 합니다. 실제 데미지나 이펙트는 자식들이 각자 OnHit을 Override해서 구현합니다!
+    // 부모는 아무것도 안 함. 실제 데미지나 이펙트는 자식들이 각자 OnHit을 Override해서 구현합니다!
 }
 
 void AGearProjectile::ActivateProjectile(FVector SpawnLocation, FRotator SpawnRotation)
@@ -55,6 +55,12 @@ void AGearProjectile::ActivateProjectile(FVector SpawnLocation, FRotator SpawnRo
         ProjectileMovement->Velocity = SpawnRotation.Vector() * ProjectileMovement->InitialSpeed;
         ProjectileMovement->Activate();
     }
+    
+    if (TrailEffectComp)
+    {
+        // 파라미터로 true를 넘겨주면 "기존 상태를 리셋하고 처음부터 다시 재생하라"는 뜻입니다.
+        TrailEffectComp->Activate(true); 
+    }
 }
 
 void AGearProjectile::DeactivateProjectile()
@@ -67,5 +73,11 @@ void AGearProjectile::DeactivateProjectile()
     {
         ProjectileMovement->StopMovementImmediately();
         ProjectileMovement->Deactivate();
+    }
+    
+    // 잠들 때는 이펙트도 확실하게 꺼줍니다!
+    if (TrailEffectComp)
+    {
+        TrailEffectComp->Deactivate();
     }
 }
