@@ -31,4 +31,7 @@ public:
 	
 	virtual void ActivateProjectile(FVector SpawnLocation, FRotator SpawnRotation) override;
 	virtual void DeactivateProjectile() override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Power = 10.0f;
 };

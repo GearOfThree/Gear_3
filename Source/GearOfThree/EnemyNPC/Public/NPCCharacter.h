@@ -5,13 +5,14 @@
 
 #include "CoreMinimal.h"
 #include "GearCharacter.h"
+#include "MS_DamageableCharacter.h"
 #include "NPCCharacter.generated.h"
 
 // 클래스 전방 선언 (컴파일 속도 최적화)
 class UStateTreeComponent;
 
 UCLASS()
-class GEAROFTHREE_API ANPCCharacter : public AGearCharacter
+class GEAROFTHREE_API ANPCCharacter : public AMS_DamageableCharacter
 {
 	GENERATED_BODY()
 
@@ -53,4 +54,25 @@ public:
 	// --- 전투 함수 ---
 	virtual void DecreaseAmmo();
 	virtual void ReloadWeapon();
+	
+	
+	//여기부터 사망로직
+public:
+	// 🔹 사망 여부 체크 (타겟팅 제외용)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
+	bool bIsDead = false;
+
+	// 🔹 사망 애니메이션 몽타주 (블루프린트에서 할당)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* DeathMontage;
+
+	// 🔹 사망 처리 함수
+	UFUNCTION(BlueprintCallable, Category = "Status")
+	virtual void Die();
+
+protected:
+	// 🔹 애니메이션이 끝난 후 실제로 파괴할 함수
+	void DestroyAfterDeath();
+    
+	FTimerHandle DeathTimerHandle;
 };

@@ -45,4 +45,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	UNiagaraSystem* BounceSparkEffect;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Power = 10.0f;
 };

@@ -1,5 +1,6 @@
 #include "AllyProjectile.h"
 #include "GearCharacter.h"
+#include "MS_DamageableCharacter.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -57,12 +58,40 @@ void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
        // 적(사이언) 명중!
        if (HitCharacter->GetTeamSide() == ETeamSide::Enemy)
        {
+          // 1. 피격 이펙트 재생
           if (EnemyHitEffect) 
           {
              UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EnemyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
           }
           
-          // TODO: 나중에 여기에 데미지 주는 로직 한 줄 추가 (DamageComp->TakeCustomDamage(...))
+          // =====================================================================
+          // 🚨 [추가된 동료분의 데미지 시스템 연동 로직]
+          // =====================================================================
+          // GearCharacter 를 상속 받고 있는 대상인지 확인한다.
+          AMS_DamageableCharacter* DamageableChar = Cast<AMS_DamageableCharacter>(OtherActor);
+          
+          // return 대신 if문으로 감싸서 풀링 수면 함수가 정상 작동하게 보호합니다.
+          if (DamageableChar)
+          {
+              // UMS_Damageable 를 구현하고 있는지 확인한다. && TeamSide 가 Enemy 인지 확인한다. 
+              // (위에서 Enemy 체크를 했지만, 확실하게 한 번 더 체크!)
+              if (OtherActor->Implements<UMS_Damageable>() && DamageableChar->TeamSide == ETeamSide::Enemy)
+              {
+                  // 1 : 함수를 실행할 대상 객체, 2 : 데미지 수치(Power), 3 : 가해자(this)
+                  IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
+                  
+                  DrawDebugString(
+                     GetWorld(),
+                     GetActorLocation() + FVector(0,0,100),
+                     TEXT("Ally Damage Applied!"),
+                     nullptr,
+                     FColor::White,
+                     2.0f,
+                     true
+                  ); 
+              }
+          }
+          // =====================================================================
        }
     }
     else // 캐릭터가 아닌 벽/바닥을 맞춘 경우
@@ -74,7 +103,7 @@ void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
        }
     }
 
-    // 🚨 [핵심 수정] Destroy()를 지우고, 총알을 재워서 탄약고(Pool)로 돌려보냅니다!
+    // 🚨 [핵심 유지] Destroy() 대신 풀링으로 돌려보내기
     DeactivateProjectile(); 
 }
 

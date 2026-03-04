@@ -3,6 +3,8 @@
 
 #include "MS_DamageableCharacter.h"
 
+#include "NPCCharacter.h"
+
 // Sets default values
 AMS_DamageableCharacter::AMS_DamageableCharacter()
 {
@@ -50,7 +52,13 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 			FColor::Green,
 			FString::Printf(TEXT("Target Dead"))
 		);
+		
+		if (ANPCCharacter* NPC = Cast<ANPCCharacter>(this))
+		{
+			NPC->Die(); // 애니메이션 재생, 충돌 끄기, 3초 뒤 파괴 실행!
+		}
 	}
+	
 }
 
 // void AMS_TestGearCharacter::ReceiveDamage_Implementation(float Damage, AActor* DamageCauser)

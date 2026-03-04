@@ -1,5 +1,6 @@
 #include "BuzzKillProjectile.h"
 #include "GearCharacter.h"
+#include "MS_DamageableCharacter.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
@@ -150,9 +151,10 @@ void ABuzzKillProjectile::Tick(float DeltaTime)
 
 void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    // 🚨 유저 원본 Hit 로직 100% 유지!
+    // 1. 유효성 검사 (자기 자신 충돌 방지)
     if (!OtherActor || OtherActor == this) return;
     
+    // 2. 캐릭터 피아 식별 및 이펙트 처리
     AGearCharacter* HitCharacter = Cast<AGearCharacter>(OtherActor);
     if (HitCharacter)
     {
@@ -172,28 +174,53 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
                 UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), AllyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
             }
         }
+        
+        // GearCharacter 를 상속 받고 있는 대상인지 확인한다.
+        AMS_DamageableCharacter* DamageableChar = Cast<AMS_DamageableCharacter>(OtherActor);
+        
+        if (DamageableChar)
+        {
+            // UMS_Damageable 를 구현하고 있는지 확인한다. && TeamSide 가 Enemy 인지 확인한다. 
+            if (OtherActor->Implements<UMS_Damageable>() && (DamageableChar->TeamSide == ETeamSide::Ally || DamageableChar->TeamSide == ETeamSide::Player))
+            {
+                // 1: 함수를 실행할 대상 객체, 2: 데미지 수치(Power), 3: 가해자(this)
+                IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
+                
+                DrawDebugString(
+                   GetWorld(),
+                   GetActorLocation() + FVector(0,0,100),
+                   TEXT("Sion Damage Applied!"), // 빈칸이었던 부분에 확인용 텍스트 임시 추가
+                   nullptr,
+                   FColor::White,
+                   2.0f,
+                   true
+                ); 
+            }
+        }
+        // =====================================================================
 
-        // TODO: HitCharacter 체력 깎기 로직 추가 예정
-        DeactivateProjectile(); // 💡 Destroy() -> DeactivateProjectile() 교체
+        // 맞췄으니 파괴(풀링 수면) 처리
+        DeactivateProjectile(); 
         return;
     }
 
+    // 3. 환경(바닥) 충돌
     if (Hit.ImpactNormal.Z > 0.7f)
     {
         if (BounceSparkEffect)
         {
             UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
         }
-        DeactivateProjectile(); // 💡 Destroy() -> DeactivateProjectile() 교체
+        DeactivateProjectile(); 
         return;
     }
 
+    // 4. 벽/천장 반사 물리 및 스파크 이펙트
     if (BounceSparkEffect)
     {
         UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BounceSparkEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
     }
 
-    // 🚨 유저 원본 반사각 계산 로직 유지!
     FVector IncomingVelocity = LastFrameVelocity;
     FVector Normal = Hit.ImpactNormal;
 
