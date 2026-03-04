@@ -7,7 +7,7 @@
 ANPCCharacter::ANPCCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.TickInterval = 0.1f;
 	// StateTree 컴포넌트 생성
 	StateTreeComponent = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComponent"));
 	

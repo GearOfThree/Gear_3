@@ -6,6 +6,19 @@
 void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
+	
+	// 흘러간 시간(DeltaTime)을 누적합니다.
+	InstanceData.TimeSinceLastUpdate += DeltaTime;
+
+	// 누적된 시간이 1초(1.0f)가 안 되었다면? 
+	// 무거운 탐색 연산을 하지 않고 그냥 함수를 종료(return)합니다!
+	if (InstanceData.TimeSinceLastUpdate < 1.0f)
+	{
+		return; 
+	}
+	// 1초가 지났다면, 다음 1초를 세기 위해 타이머를 다시 0으로 돌려놓습니다.
+	InstanceData.TimeSinceLastUpdate = 0.0f;
+	
 	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
 	if (!Owner) return;
 

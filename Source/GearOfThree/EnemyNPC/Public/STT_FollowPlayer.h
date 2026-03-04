@@ -16,6 +16,9 @@ struct GEAROFTHREE_API FSTT_FollowPlayerInstanceData
 	// 플레이어에게 도달했다고 판단하여 멈추는 거리
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	float StopRadius = 600.0f;
+	
+	UPROPERTY()
+	float TimeSinceLastUpdate = 0.1f;
 };
 
 USTRUCT(meta = (DisplayName = "Follow Player", Category = "Ally NPC"))

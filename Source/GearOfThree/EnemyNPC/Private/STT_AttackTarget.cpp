@@ -32,6 +32,22 @@ EStateTreeRunStatus FSTT_AttackTarget::EnterState(FStateTreeExecutionContext& Co
 EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
     FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
+    
+    // 시간 누적
+    InstanceData.TimeSinceLastUpdate += DeltaTime;
+
+    // 0.1초(1초에 10번)가 안 지났다면 무거운 연산 스킵!
+    if (InstanceData.TimeSinceLastUpdate < 0.1f)
+    {
+        // 스킵하더라도 실패(Failed)가 아니라 "계속 진행 중(Running)"이라고 트리에 알려줘야 합니다.
+        return EStateTreeRunStatus::Running; 
+    }
+
+    // 0.1초가 지났다면 타이머 초기화 후 아래 로직 실행
+    InstanceData.TimeSinceLastUpdate = 0.0f;
+
+    // =======================================================
+    
     ACharacter* Owner = Cast<ACharacter>(Context.GetOwner());
     AActor* Target = InstanceData.TargetActor; 
 
@@ -47,25 +63,25 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
     // 사거리 밖이면 적을 향해 뛰어갑니다!
     if (Distance > InstanceData.AttackRange)
     {
-        AIC->MoveToActor(Target, InstanceData.AttackRange * 0.8f); // 사거리 안쪽까지 접근
+        // 💡 이제 이 무거운 길찾기 함수가 1초에 60번이 아니라 10번만 실행되어 렉이 사라집니다!
+        AIC->MoveToActor(Target, InstanceData.AttackRange * 0.8f); 
         
         Owner->bUseControllerRotationYaw = false; 
-        MoveComp->bOrientRotationToMovement = true; // 뛰는 방향 쳐다보기
-        AIC->ClearFocus(EAIFocusPriority::Gameplay); // 조준 풀기
+        MoveComp->bOrientRotationToMovement = true; 
+        AIC->ClearFocus(EAIFocusPriority::Gameplay); 
     }
     // 사거리 안에 들어오면 멈춰서 쏩니다!
     else
     {
-        // (문워크 방지)
         if (AIC->GetMoveStatus() != EPathFollowingStatus::Idle) AIC->StopMovement();
         MoveComp->Velocity = FVector::ZeroVector;
         MoveComp->bOrientRotationToMovement = false; 
 
-        // 적 바라보기 (조준)
         Owner->bUseControllerRotationYaw = true; 
         AIC->SetFocus(Target);
 
-        // 사격 명령 (연사 속도 제한은 WeaponComponent가 스스로 알아서 막아줌!)
+        // 💡 1초에 10번씩 방아쇠를 당기라고 명령하므로, 
+        // WeaponComponent의 자동 연사 쿨타임이 정상적으로 촘촘하게 작동합니다!
         if (UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>())
         {
             WeaponComp->Fire(); 

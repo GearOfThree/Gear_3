@@ -16,6 +16,9 @@ struct GEAROFTHREE_API FSTE_TargetSelectorInstanceData
 	// 최종 선정된 타겟 (태스크에 연결될 값)
 	UPROPERTY(EditAnywhere, Category = "Output")
 	TObjectPtr<AActor> SelectedTarget = nullptr;
+	
+	UPROPERTY()
+	float TimeSinceLastUpdate = 1.0f;
 };
 
 USTRUCT(meta = (DisplayName = "Target Selector", Category = "Enemy AI"))
@@ -26,4 +29,5 @@ struct GEAROFTHREE_API FSTE_TargetSelector : public FStateTreeEvaluatorCommonBas
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
     
 	virtual void Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	
 };

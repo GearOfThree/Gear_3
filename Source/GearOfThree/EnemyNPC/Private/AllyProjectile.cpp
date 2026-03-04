@@ -6,6 +6,8 @@
 
 AAllyProjectile::AAllyProjectile()
 {
+   PrimaryActorTick.bCanEverTick = false;
+   
     if (CollisionComp)
     {
        // 물리 충돌 프로필 및 오너 무시 설정
