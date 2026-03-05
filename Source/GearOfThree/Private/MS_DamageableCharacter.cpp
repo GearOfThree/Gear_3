@@ -44,6 +44,9 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 	if (HPComponent->CurrentHP <= 0.f)
 	{
 		HPComponent->IsDead = true;
+		
+		HPComponent->OnDead.Broadcast();
+		
 		GEngine->AddOnScreenDebugMessage(
 			-1,  // 각 객체마다 고유 Key
 			2.0f,

@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "InputMappingContext.h"
+#include "MS_DamageableCharacter.h"
 #include "MS_Weapon.h"
 #include "MS_WeaponWheelWidget.h"
 #include "WeaponDirection.h"
@@ -22,7 +23,7 @@ struct FInputActionValue;
  *  Implements a controllable orbiting camera
  */
 UCLASS()
-class AMS_Player : public AGearCharacter
+class AMS_Player : public AMS_DamageableCharacter
 {
 	GENERATED_BODY()
 
@@ -56,11 +57,11 @@ protected:
 	virtual void BeginPlay() override;
 	
 	virtual void Tick( float DeltaTime ) override;
-protected:
+protected: // 모션
 
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
-	UInputAction* JumpAction;
+	UInputAction* RollAction;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, Category="Input")
@@ -99,8 +100,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
 	float SprintSpeed = 800.f;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
-	bool IsCrouched = false;
+public:
+	void OnRollStart();
+	
+	void OnRollEnd();
+	
+	bool bIsRolling = false;
+	
+	bool bCrouched = false;
 	
 protected: // 초점 변경 내용
 	
@@ -145,6 +152,7 @@ public:
 	// 안전하게 컴포넌트/값 초기화 해두기
 	void CachedDefaults_Base();
 	
+
 	bool bCachedDefaults = false;
 	bool bWantsADS = false;
 	// bool bIsFiring = false;
@@ -248,8 +256,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	void Jump();
-	void StopJumping();
+	void DiveRoll(const FInputActionValue& Value);
+	// void OnJumpCompleted();
 	
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -282,6 +290,8 @@ protected:
 	void FirstWeaponSpawn(EWeaponDirection direction);
 
 	void HandleFire();
+	
+	void HandleDead();
 public:
 
 	/** Handles move inputs from either controls or UI interfaces */
