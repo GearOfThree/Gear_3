@@ -53,7 +53,7 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	
 	// 사이언 전용 설정
 	TeamSide = ETeamSide::Enemy; // 팀을 Enemy로 설정
-	MaxAmmo = 10;                // 사이언의 탄창 설정
+
 }
 
 void AEnemyNPCCharacter::BeginPlay()
@@ -62,6 +62,8 @@ void AEnemyNPCCharacter::BeginPlay()
 	
 	if (WeaponComponent && StartingWeaponClass)
 	{
+		WeaponComponent->SetFireRate(0.4f);
+		WeaponComponent->SetAmmo(10);
 		WeaponComponent->EquipWeapon(StartingWeaponClass, FName("weapon_socket"));
 	}
 }

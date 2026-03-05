@@ -33,5 +33,5 @@ public:
 	virtual void DeactivateProjectile() override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Power = 10.0f;
+	float Power = 0.1f;
 };

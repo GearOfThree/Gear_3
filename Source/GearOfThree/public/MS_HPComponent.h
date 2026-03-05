@@ -29,7 +29,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
 	float MaxHP = 100.f;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
 	float CurrentHP = 100.f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
