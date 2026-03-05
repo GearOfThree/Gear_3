@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GearProjectile.h" // 🚨 부모 클래스 헤더 포함!
+#include "GearProjectile.h"
 #include "BuzzKillProjectile.generated.h"
 
 class UNiagaraSystem;
@@ -39,7 +39,7 @@ protected:
 	virtual void ActivateProjectile(FVector SpawnLocation, FRotator SpawnRotation) override;
 	virtual void DeactivateProjectile() override;
 public:
-	// 🔹 피격 이펙트들
+	// 피격 이펙트들
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	UNiagaraSystem* AllyHitEffect;  
 
