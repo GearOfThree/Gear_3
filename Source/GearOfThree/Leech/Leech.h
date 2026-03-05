@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "Components/StateTreeComponent.h"
 #include "MS_DamageableCharacter.h"
 #include "Leech.generated.h"
 
@@ -18,7 +20,18 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	
+	// ST 컴포넌트 생성
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI|StateTree", meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UStateTreeComponent> StateTreeComp;
+	// ST 슬롯 생성
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AI|StateTree")
+	TObjectPtr<UStateTree> StateTreeSlot;
 
+	// 공전 가능 여부 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
+	bool bOrbiting = true;
+	
 	// 스폰 매니저가 세팅해줄 값들
 	UPROPERTY(BlueprintReadWrite, Category="Leech|Flock")
 	TObjectPtr<AActor> LeechManager = nullptr;
@@ -27,17 +40,14 @@ public:
 	int32 OrbitIndex = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Flock")
-	int32 OrbitCount = 50;
+	int32 OrbitCount = 35;
 	
 	// 공전 파라미터
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Flock")
-	float OrbitRadius = 300.f;
+	float OrbitRadius = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Flock")
 	float OrbitSpeedDegPerSec = 240.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Flock")
-	float HeightOffset = 80.f;
 	
 	UPROPERTY(VisibleAnywhere, Category="Leech|Flock")
 	FQuat OrbitPlaneQuat = FQuat::Identity;

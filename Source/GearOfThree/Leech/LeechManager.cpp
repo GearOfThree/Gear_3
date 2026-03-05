@@ -3,10 +3,7 @@
 
 #include "Leech/LeechManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "GearOfThreeTypes.h"
-#include "GenericTeamAgentInterface.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Splines/SplineMath.h"
 
 // Sets default values
 ALeechManager::ALeechManager()
@@ -35,7 +32,7 @@ void ALeechManager::BeginPlay()
 	   TimerHandle_ChangeDir,
 	   this,
 	   &ALeechManager::ChangeDirection,
-	   1.0f,
+	   2.0f,
 	   true
    );
 }
@@ -45,10 +42,14 @@ void ALeechManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	// 현재 위치와 스폰 지점으로부터의 거리 계산
 	FVector NowLocation = GetActorLocation();
 	double Distance = UKismetMathLibrary::VSize(NowLocation - SpawnLocation);
-	if (Distance > 2500 || NowLocation.Z < 300)
+	
+	// 거리가 너무 떨어지거나 높이 값이 튀면
+	if (Distance > 2500 || NowLocation.Z < 300 || NowLocation.Z > 800)
 	{
+		// 방향을 스폰 지점으로 설정
 		Direction = (SpawnLocation - NowLocation).GetSafeNormal();
 	}
 	SetActorLocation(NowLocation + Direction * Speed * DeltaTime);
@@ -57,10 +58,7 @@ void ALeechManager::Tick(float DeltaTime)
 void ALeechManager::SpawnLeeches()
 {
 	// 월드 유효성 검사
-	if (!IsValid(GetWorld()))
-	{
-		return;
-	}
+	if (!IsValid(GetWorld())) return;
 
 	// BluePrint에서 스폰 공장을 직접 지정해주지 않았다면
 	if (!LeechFactory)
@@ -107,10 +105,9 @@ void ALeechManager::SpawnLeeches()
 		Leech->OrbitCount = Count;							// 전체 마릿수
 		Leech->OrbitRadius = OrbitRadius;					// 공전 반지름
 		Leech->OrbitSpeedDegPerSec = OrbitSpeedDegPerSec;	// 공전 각속도
-		Leech->HeightOffset = HeightOffset;					// Z축 오프셋
 		
 		// 리치마다 랜덤한 축을 기준으로 기울기를 줌
-		FRandomStream Rng(TiltSeed + i);
+		FRandomStream Rng(time(NULL) + i);
 			// 1) 랜덤한 방향 벡터(회전축) 생성
 		const FVector Axis = Rng.VRand();	// 단위벡터 랜덤
 			// 2) 기울기 각도 설정
@@ -127,8 +124,22 @@ void ALeechManager::SpawnLeeches()
 
 void ALeechManager::ChangeDirection()
 {
-	FVector NowLocation = GetActorLocation();
-	float Dist = FVector::Dist(NowLocation, SpawnLocation);
+	// 디폴트 : 영벡터(이동 중지)
+	Direction = FVector::Zero();
 	
-	Direction = UKismetMathLibrary::RandomUnitVector();
+	// 이동 가능 상황이면
+	if (Moveable)
+	{
+		// 랜덤한 방향 벡터 설정
+		Direction = UKismetMathLibrary::RandomUnitVector();
+		// 연직 방향으로 너무 튀지 않게 Z값만 조정
+		Direction.Z = FMath::Clamp(Direction.Z, -0.3f, 0.3f);
+		// 다음 호출 시 이동 불가능하도록 설정하고 함수 종료
+		Moveable = false;
+		return;
+	}
+	
+	// 이동 불가능 상황이면
+	// 방향은 그대로 영벡터, 다음 호출 시 이동 가능하도록 설정
+	Moveable = true;
 }

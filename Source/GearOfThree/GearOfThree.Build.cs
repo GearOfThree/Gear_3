@@ -16,6 +16,7 @@ public class GearOfThree : ModuleRules
 			"EnhancedInput",
 			"AIModule",
 			"StateTreeModule",
+			"GameplayTasks",
 			"GameplayStateTreeModule",
 			"UMG",
 			"Slate",

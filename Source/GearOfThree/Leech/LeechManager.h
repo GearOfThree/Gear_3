@@ -32,8 +32,11 @@ public:
 	FVector Direction = FVector::ForwardVector;
 	// 매니저의 이동 속력
 	UPROPERTY(EditAnywhere, Category="Manager|Move")
-	float Speed = 1200.f;
-
+	float Speed = 1000.f;
+	// 매니저의 이동 가능 여부
+	UPROPERTY(EditAnywhere, Category="Manager|Move")
+	bool Moveable = true;
+	// 매니저 이동 함수 및 함수 재생 타이머
 	FTimerHandle TimerHandle_ChangeDir;
 	void ChangeDirection();
 	
@@ -43,27 +46,22 @@ public:
 	// 스폰 시킬 리치 개체 수
 	UPROPERTY(EditAnywhere, Category="Leech|Spawn")
 	int32 SpawnCount = 50;
+	// 스폰된 리치 보관 (배열)
+	UPROPERTY(VisibleAnywhere, Category="Leech|Spawn")
+	TArray<TObjectPtr<ALeech>> SpawnedLeeches;
 
 	// 공전 파라미터 (리치들에게 주입)
 	// 공전 반지름
 	UPROPERTY(EditAnywhere, Category="Leech|Flock")
-	float OrbitRadius = 300.f;
+	float OrbitRadius = 200.f;
 	// 공전 각속도 (deg/초)
 	UPROPERTY(EditAnywhere, Category="Leech|Flock")
 	float OrbitSpeedDegPerSec = 240.f;
-	// 중심점 기준 Z축 방향 오프셋 (위로 띄우기)
-	UPROPERTY(EditAnywhere, Category="Leech|Flock")
-	float HeightOffset = 80.f;
 	// 공전 궤도 최대 기울기
 	UPROPERTY(EditAnywhere, Category="Leech|Flock")
-	float MaxTiltDeg = 80.f;
-	// 랜덤 고정 시드(재현성)
-	UPROPERTY(EditAnywhere, Category="Leech|Flock")
-	int32 TiltSeed = time(NULL);
+	float MaxTiltDeg = 90.f;
 	
-	// 스폰된 리치 보관 (배열)
-	UPROPERTY(VisibleAnywhere, Category="Leech|Spawn")
-	TArray<TObjectPtr<ALeech>> SpawnedLeeches;
+	
 
 private:
 	// 스폰 함수
