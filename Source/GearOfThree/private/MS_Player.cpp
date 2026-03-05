@@ -139,7 +139,10 @@ void AMS_Player::BeginPlay()
 	}
 	
 	// #################### 델리게이트 선언 ####################
-	HPComponent->OnDead.AddUObject(this, &AMS_Player::HandleDead);
+	if (HPComponent)
+	{
+		HPComponent->OnDead.AddUObject(this, &AMS_Player::HandleDead);
+	}
 }
 
 void AMS_Player::Tick(float DeltaTime)
@@ -203,10 +206,11 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMS_Player::Sprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMS_Player::StopSprint);
 		
-		// Crouch(엄패 기능을 위해 필요함)
+		// Crouch
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMS_Player::StartCrouch);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AMS_Player::StopCrouch);
-	
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Canceled, this, &AMS_Player::StopCrouch);
+		
 		// ZoomIn // 토글 방식이 아닌 홀드 방식으로 설정
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started,   this, &AMS_Player::StartADS);
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Completed, this, &AMS_Player::StopADS);
@@ -331,6 +335,8 @@ void AMS_Player::StopSprint()
 
 void AMS_Player::StartCrouch(const FInputActionValue& Value)
 {
+	
+	UE_LOG(LogTemp, Warning, TEXT("StartCrouch()"));
 	bCrouched = true;
 	
 	Crouch(); 
@@ -338,6 +344,7 @@ void AMS_Player::StartCrouch(const FInputActionValue& Value)
 
 void AMS_Player::StopCrouch()
 {
+	UE_LOG(LogTemp, Warning, TEXT("StopCrouch()"));
 	bCrouched = false;
 	
 	UnCrouch(); 
@@ -610,14 +617,13 @@ void AMS_Player::HandleDead()
 {
 	if (auto* Anim = Cast<UMS_PlayerAnim>(GetMesh()->GetAnimInstance()))
 	{
-		// 이건 HPComponent 에서 해주고 있어 
-		// Anim->bIsDead = true;
+		Anim->bIsDead = true;
 		
 		// 마지막 상태가 Crouch 상태였는지 확인한다. 
 		Anim->bWasCrouchedOnDeath = bCrouched; 
 	}
 	
-	// 이동과 입력 막기
+	// 이동과 입력 막기 // 
 	GetCharacterMovement()->DisableMovement();
 }
 

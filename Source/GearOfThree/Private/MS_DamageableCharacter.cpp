@@ -63,31 +63,3 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 	}
 	
 }
-
-// void AMS_TestGearCharacter::ReceiveDamage_Implementation(float Damage, AActor* DamageCauser)
-// {
-// 	HP->ApplyDamage(Damage);
-// 	
-// 	if (GEngine)
-// 	{
-// 		GEngine->AddOnScreenDebugMessage(
-// 			-1,
-// 			2.0f,
-// 			FColor::Green,
-// 			FString::Printf(TEXT("Current HP: %.1f Damage: %.0f"), HP->CurrentHP, Damage)
-// 		);
-// 	}
-// 	
-// 	// 죽었어 
-// 	if (HP->CurrentHP <= 0.f)
-// 	{
-// 		GEngine->AddOnScreenDebugMessage(
-// 			-1,  // 각 객체마다 고유 Key
-// 			2.0f,
-// 			FColor::Green,
-// 			FString::Printf(TEXT("Target Dead"))
-// 		);
-// 		HP->IsDead = true;
-// 	}
-// 	
-// }
