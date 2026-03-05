@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "MS_HPComponent.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnDead)
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GEAROFTHREE_API UMS_HPComponent : public UActorComponent
@@ -37,6 +38,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyDamage(float Damage);
 	
+	// 델리게이트 설정
+	FOnDead OnDead;
 	
 	
 };
