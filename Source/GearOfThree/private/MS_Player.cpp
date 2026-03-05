@@ -139,7 +139,10 @@ void AMS_Player::BeginPlay()
 	}
 	
 	// #################### 델리게이트 선언 ####################
-	HPComponent->OnDead.AddUObject(this, &AMS_Player::HandleDead);
+	if (HPComponent)
+	{
+		HPComponent->OnDead.AddUObject(this, &AMS_Player::HandleDead);
+	}
 }
 
 void AMS_Player::Tick(float DeltaTime)
