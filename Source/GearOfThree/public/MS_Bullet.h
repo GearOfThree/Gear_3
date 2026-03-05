@@ -40,6 +40,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="FX|Cascade")
 	TObjectPtr<UParticleSystem> ImpactFX;
 	
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	TObjectPtr<USoundBase> BulletSound = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Sound")
+	class USceneComponent* BulletSoundPosition;
+	
 	UFUNCTION()
 	void OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 					 UPrimitiveComponent* OtherComp, FVector NormalImpulse,
@@ -47,4 +53,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category=Power)
 	float Power = 10;
+	
+protected:
+	void PlayBulletSound();
 };

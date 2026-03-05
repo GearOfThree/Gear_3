@@ -39,10 +39,10 @@ AMS_Bullet::AMS_Bullet()
 	
 	// 고속일시 설정
 	BulletMesh->BodyInstance.bUseCCD = true;
-	
 	BulletMesh->SetRelativeScale3D(FVector(0.25f)); // 외관 크기 설정
 	
-	
+	BulletSoundPosition = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSoundPosition"));
+	BulletSoundPosition->SetupAttachment(RootComponent);
 	
 	// BodyMeshComponent->SetSimulatePhysics(true); // 물리 시뮬레이션 on
 	// BodyMeshComponent->SetEnableGravity(true); // 중력 on
@@ -115,6 +115,9 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		);	
 	}
 	
+	// 사운드 
+	PlayBulletSound();
+	
 	if (ImpactFX)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(
@@ -128,5 +131,11 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		Destroy();
 	}
 	
+}
+
+void AMS_Bullet::PlayBulletSound()
+{
+	if (!BulletSound) return;
+	UGameplayStatics::PlaySoundAtLocation(this, BulletSound, BulletSoundPosition->GetComponentLocation());
 }
 
