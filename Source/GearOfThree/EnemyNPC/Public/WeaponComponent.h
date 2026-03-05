@@ -27,7 +27,8 @@ public:
 
 	void Fire(); 
 
-
+	void SetFireRate(float Rate);
+	void SetAmmo(int Ammo);
 	// 탄창 및 장전 시스템
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
 	int32 MaxAmmo = 20; // 최대 탄창
@@ -42,8 +43,9 @@ public:
 
 	// 무기 자체의 연사 속도 제어
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Stats")
-	float FireRate = 0.2f; // 0.2초에 한 발씩 발사
+	float FireRate = 0.1f; // 0.1초에 한 발씩 발사
 
+	
 private:
 	float LastFireTime = 0.0f; // 마지막으로 쏜 시간 기억
 

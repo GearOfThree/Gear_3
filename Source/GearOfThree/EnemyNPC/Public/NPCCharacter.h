@@ -24,24 +24,11 @@ public:
 	
 	// Evaluator가 타겟을 찾아내면 호출할 함수
 	void SetCurrentTargetActor(AActor* NewTarget) { CurrentTargetActor = NewTarget; }
-protected:
-	// 컴포넌트 초기화 완료 시점에 호출되는 함수
-	virtual void PostInitializeComponents() override;
 
 public:
 	// --- AI 컴포넌트 ---
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "NPC | AI")
 	UStateTreeComponent* StateTreeComponent;
-
-	// --- 전투 데이터 ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPC | Combat")
-	int32 MaxAmmo;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "NPC | Combat")
-	int32 CurrentAmmo;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "NPC | Combat")
-	bool bIsReloading;
 
 	// 이 변수는 State Tree의 Task나 Service에서 업데이트해줘야 합니다.
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "NPC | AI")
@@ -50,10 +37,6 @@ public:
 	// 주변에서 가장 가까운 적을 찾아 반환하는 함수
 	UFUNCTION(BlueprintCallable, Category = "NPC | AI")
 	AActor* FindClosestEnemy();
-
-	// --- 전투 함수 ---
-	virtual void DecreaseAmmo();
-	virtual void ReloadWeapon();
 	
 	
 	//여기부터 사망로직

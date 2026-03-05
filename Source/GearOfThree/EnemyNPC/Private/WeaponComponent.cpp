@@ -48,7 +48,7 @@ void UWeaponComponent::Fire()
 {
     if (!CurrentWeapon) return;
 
-    // 🚨 [추가] 총의 물리적인 연사 쿨타임 검사 (AI가 아무리 광클해도 여기서 막힘!)
+    // 총의 물리적인 연사 쿨타임 검사 (AI가 아무리 광클해도 여기서 막힘!)
     float CurrentTime = GetWorld()->GetTimeSeconds();
     if (CurrentTime - LastFireTime < FireRate) return;
 
@@ -88,4 +88,14 @@ void UWeaponComponent::EndReload()
     CurrentAmmo = MaxAmmo;
     bIsReloading = false;
     
+}
+
+void UWeaponComponent::SetFireRate(float Rate)
+{
+    FireRate = Rate;
+}
+
+void UWeaponComponent::SetAmmo(int Ammo)
+{
+    MaxAmmo = Ammo;
 }

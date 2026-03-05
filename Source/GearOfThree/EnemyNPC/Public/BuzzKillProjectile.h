@@ -47,5 +47,5 @@ public:
 	UNiagaraSystem* BounceSparkEffect;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Power = 10.0f;
+	float Power = 3.0f;
 };

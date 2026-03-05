@@ -15,35 +15,8 @@ ANPCCharacter::ANPCCharacter()
 	// StateTree 컴포넌트 생성
 	StateTreeComponent = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComponent"));
 	
-	// 기본값 초기화
-	MaxAmmo = 10;
-	CurrentAmmo = MaxAmmo;
-	bIsReloading = false;
-	
 	// 기본 팀 설정
 	TeamSide = ETeamSide::Ally; 
-}
-
-void ANPCCharacter::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	// 에디터(블루프린트)에서 수정한 MaxAmmo 값을 게임 시작 시 CurrentAmmo에 반영
-	CurrentAmmo = MaxAmmo;
-}
-
-void ANPCCharacter::DecreaseAmmo()
-{
-	if (CurrentAmmo > 0)
-	{
-		CurrentAmmo--;
-	}
-}
-
-void ANPCCharacter::ReloadWeapon()
-{
-	CurrentAmmo = MaxAmmo;
-	bIsReloading = false;
 }
 
 AActor* ANPCCharacter::FindClosestEnemy()
