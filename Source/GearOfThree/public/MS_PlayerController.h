@@ -53,6 +53,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> CrosshairWidgetClass;
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY()
 	TObjectPtr<UUserWidget> CrosshairWidget;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UUserWidget> GameOverUIClass;
+	
+	UPROPERTY()
+	TObjectPtr<UUserWidget> GameOverUIWidget;
 };

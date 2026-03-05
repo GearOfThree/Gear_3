@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameOverUI.h"
 #include "GearCharacter.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
@@ -157,8 +158,13 @@ public:
 	bool bWantsADS = false;
 	// bool bIsFiring = false;
 	
-public:
-	// bool IsWantsADS() const;
+protected: // 게임 오버 위젯
+	UPROPERTY(Transient)
+	UGameOverUI* GameOverWidget = nullptr;
+	
+	FTimerHandle DeadTimerHandle;
+	
+	void AfterDead();
 	
 protected: // 무기 관련 내용
 	

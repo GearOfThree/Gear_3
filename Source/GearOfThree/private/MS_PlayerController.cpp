@@ -28,9 +28,7 @@ void AMS_PlayerController::BeginPlay()
 		} else {
 	
 			UE_LOG(LogGearOfThree, Error, TEXT("Could not spawn mobile controls widget."));
-	
 		}
-	
 	}
 	
 	if (CrosshairWidgetClass)
@@ -41,6 +39,17 @@ void AMS_PlayerController::BeginPlay()
 		{
 			CrosshairWidget->AddToViewport();
 			CrosshairWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	
+	if (GameOverUIClass)
+	{
+		GameOverUIWidget = CreateWidget<UUserWidget>(this, GameOverUIClass);
+		
+		if (GameOverUIWidget)
+		{
+			GameOverUIWidget->AddToViewport();
+			GameOverUIWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

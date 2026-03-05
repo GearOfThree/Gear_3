@@ -43,7 +43,8 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 	}
 	
 	// 죽었어 
-	if (HPComponent->CurrentHP <= 0.f)
+	// 반복해서 실행하면 안돼
+	if (HPComponent->CurrentHP <= 0.f && !HPComponent->IsDead)
 	{
 		HPComponent->IsDead = true;
 		

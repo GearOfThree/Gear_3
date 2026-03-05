@@ -143,6 +143,7 @@ void AMS_Player::BeginPlay()
 	{
 		HPComponent->OnDead.AddUObject(this, &AMS_Player::HandleDead);
 	}
+	
 }
 
 void AMS_Player::Tick(float DeltaTime)
@@ -621,10 +622,36 @@ void AMS_Player::HandleDead()
 		
 		// 마지막 상태가 Crouch 상태였는지 확인한다. 
 		Anim->bWasCrouchedOnDeath = bCrouched; 
+		
+		GetWorld()->GetTimerManager().SetTimer
+		(
+			DeadTimerHandle,
+			this,
+			&AMS_Player::AfterDead,
+			2.0f,
+			false
+		);
 	}
 	
-	// 이동과 입력 막기 // 
+	// 이동과 입력 막기 
 	GetCharacterMovement()->DisableMovement();
+}
+
+void AMS_Player::AfterDead()
+{
+	AMS_PlayerController* playerController = Cast<AMS_PlayerController>(GetController());
+	
+	if (!playerController || !playerController->IsLocalController()) return;
+	
+	if (playerController->GameOverUIWidget->IsInViewport())
+	{
+		// GameOver 위젯 
+		playerController->GameOverUIWidget->SetVisibility(ESlateVisibility::Visible);
+		
+		playerController->SetPause(true);
+		playerController->SetInputMode(FInputModeUIOnly());
+		playerController->SetShowMouseCursor(true);
+	}
 }
 
 void AMS_Player::ApplyRecoilFromWeapon(const FMS_RecoilSpec& Spec, int32 ShotIndex, bool bIsADS)

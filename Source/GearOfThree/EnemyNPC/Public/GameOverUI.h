@@ -15,7 +15,7 @@ class GEAROFTHREE_API UGameOverUI : public UUserWidget
 {
 	GENERATED_BODY()
 	
-	virtual void NativeConstruct() override;
+	virtual void NativeOnInitialized() override;
 	
 public:
 	// WBP_GameOver에서 위젯 연결
