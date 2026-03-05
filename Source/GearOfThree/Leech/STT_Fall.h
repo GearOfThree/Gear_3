@@ -27,6 +27,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fall")
 	float GroundNormalZThreshold = 0.6f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Fall")
+	bool bLanded = false;
+	
 private:
 	UPROPERTY(Transient)
 	float FallVelocity = 0.f;

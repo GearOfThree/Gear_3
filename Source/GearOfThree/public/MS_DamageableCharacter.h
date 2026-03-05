@@ -34,6 +34,8 @@ protected:
 	UMS_HPComponent* HPComponent;
 	
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bBroadcasted = false;
 	
 	virtual void ReceiveDamage_Implementation(float Damage, AActor* DamageCauser) override;
 };

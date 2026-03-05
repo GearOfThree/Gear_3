@@ -5,6 +5,7 @@
 #include "GearOfThreeTypes.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/RandomStream.h"
+#include "GameplayTagsManager.h"
 
 // 기본 생성자
 ALeech::ALeech()
@@ -22,16 +23,21 @@ void ALeech::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// 델리게이트
+	// 델리게이트 호출
 	if (HPComponent)
 	{
-		
+		HPComponent->OnFall.AddUObject(this, &ALeech::OrbitToFall);
 	}
 	
 	if (StateTreeComp && StateTreeSlot)
 	{
 		StateTreeComp->SetStateTree(StateTreeSlot);
 		StateTreeComp->StartLogic();
+	}
+	
+	if (!OrbitToFallEventTag.IsValid())
+	{
+		OrbitToFallEventTag = FGameplayTag::RequestGameplayTag(FName("Event.Leech.OrbitToFall"));
 	}
 	
 	const int32 Count = FMath::Max(1, OrbitCount);
@@ -76,4 +82,14 @@ void ALeech::Tick(float DeltaTime)
 	SetActorRotation(UKismetMathLibrary::MakeRotFromX((Center + TiltedOffset - GetActorLocation()).GetSafeNormal()));
 	// 중심에 오프셋 더해 위치 설정
 	SetActorLocation(Center + TiltedOffset, false);	// 스윕 false (리치끼리 충돌/끼임 최소화)
+}
+
+void ALeech::OrbitToFall()
+{
+	bOrbitToFall = true;
+	
+	if (StateTreeComp && OrbitToFallEventTag.IsValid())
+	{
+		StateTreeComp->SendStateTreeEvent(OrbitToFallEventTag);
+	}
 }

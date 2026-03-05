@@ -3,7 +3,9 @@
 
 #include "Leech/STT_Fall.h"
 
-
+#include "Components/StateTreeComponent.h"
+#include "GameplayTagContainer.h"
+#include "GameplayTagsManager.h"
 #include "Leech.h"
 #include "StateTreeExecutionContext.h"
 #include "GameFramework/Actor.h"
@@ -35,6 +37,11 @@ EStateTreeRunStatus USTT_Fall::EnterState(FStateTreeExecutionContext& Context, c
 
 EStateTreeRunStatus USTT_Fall::Tick(FStateTreeExecutionContext& Context, float DeltaTime)
 {
+	if (bLanded)
+	{
+		return EStateTreeRunStatus::Running;
+	}
+	
 	UObject* OwnerObj = Context.GetOwner();
 	AActor* OwnerActor = Cast<AActor>(OwnerObj);
 	UE_LOG(LogTemp, Warning, TEXT("Tick 돌고 있음"));
@@ -63,8 +70,19 @@ EStateTreeRunStatus USTT_Fall::Tick(FStateTreeExecutionContext& Context, float D
 	if (Hit.bBlockingHit && Hit.ImpactNormal.Z >= GroundNormalZThreshold)
 	{
 		FallVelocity = 0.f;
+		bLanded = true; // 다음 틱부터는 중력/이동 안 함
+		OwnerActor->AddActorWorldOffset(FVector(0, 0, Hit.Location.Z + 30), false);
+
+		if (UStateTreeComponent* STC = OwnerActor->FindComponentByClass<UStateTreeComponent>())
+		{
+			const FGameplayTag LandedTag =
+				FGameplayTag::RequestGameplayTag(FName("Event.Leech.Landed"));
+
+			STC->SendStateTreeEvent(LandedTag);
+		}
+		
 		UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Succeeded (Landed)"));
-		return EStateTreeRunStatus::Succeeded;
+		return EStateTreeRunStatus::Running;
 	}
 
 	return EStateTreeRunStatus::Running;
