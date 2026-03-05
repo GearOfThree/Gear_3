@@ -20,7 +20,7 @@ protected:
 
 	// 톱날만의 고유 물리 세팅 (그대로 유지)
 	UPROPERTY(EditAnywhere, Category="Physics")
-	float LaunchPower = 4000.0f;
+	float LaunchPower = 5000.0f;
     
 	UPROPERTY(EditAnywhere, Category="Physics")
 	float SpinPower = 100000.0f;
@@ -29,7 +29,7 @@ protected:
 	float Bounciness = 0.95f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics")
-	float CustomGravityScale = 0.3f;
+	float CustomGravityScale = 0.2f;
     
 	FVector LastFrameVelocity;
 
