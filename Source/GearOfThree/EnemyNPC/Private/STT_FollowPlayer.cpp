@@ -10,6 +10,19 @@ EStateTreeRunStatus FSTT_FollowPlayer::Tick(FStateTreeExecutionContext& Context,
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
     
+	// 시간 누적
+	InstanceData.TimeSinceLastUpdate += DeltaTime;
+
+	// 0.1초(1초에 10번)가 안 지났다면 무거운 연산 스킵!
+	if (InstanceData.TimeSinceLastUpdate < 0.1f)
+	{
+		// 스킵하더라도 실패(Failed)가 아니라 "계속 진행 중(Running)"이라고 트리에 알려줘야 합니다.
+		return EStateTreeRunStatus::Running; 
+	}
+
+	// 0.1초가 지났다면 타이머 초기화 후 아래 로직 실행
+	InstanceData.TimeSinceLastUpdate = 0.0f;
+	
 	ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
 	if (!Owner) return EStateTreeRunStatus::Failed;
 
@@ -53,7 +66,7 @@ EStateTreeRunStatus FSTT_FollowPlayer::EnterState(FStateTreeExecutionContext& Co
 {
 	// 화면에 초록색으로 "Follow Start" 출력
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, TEXT("🟢 [State] Follow Player : START"));
-    
+	
 	// 로그 창에도 남기기
 	UE_LOG(LogTemp, Log, TEXT("State Tree: Enter Follow Player"));
 

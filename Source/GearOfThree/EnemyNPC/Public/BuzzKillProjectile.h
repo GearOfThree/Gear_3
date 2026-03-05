@@ -1,63 +1,51 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "NiagaraComponent.h"
+#include "GearProjectile.h" // 🚨 부모 클래스 헤더 포함!
 #include "BuzzKillProjectile.generated.h"
 
+class UNiagaraSystem;
+
 UCLASS()
-class GEAROFTHREE_API ABuzzKillProjectile : public AActor
+class GEAROFTHREE_API ABuzzKillProjectile : public AGearProjectile
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+    
+public: 
 	ABuzzKillProjectile();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	
-	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category="Components")
-	UStaticMeshComponent* SawMesh;
-	
-	UPROPERTY(VisibleAnywhere, Category = "Collision")
-	class USphereComponent* CollisionComp;
-	
-	// 발사 속도 (Impulse 강도)
+
+	// 톱날만의 고유 물리 세팅 (그대로 유지)
 	UPROPERTY(EditAnywhere, Category="Physics")
 	float LaunchPower = 4000.0f;
-	
-	// 회전 속도 (토크)
+    
 	UPROPERTY(EditAnywhere, Category="Physics")
 	float SpinPower = 100000.0f;
-	
-	// 반발 계수 (0.0 ~ 1.0): 1.0이면 에너지 손실 없이 튕김
+    
 	UPROPERTY(EditAnywhere, Category = "Physics")
 	float Bounciness = 0.95f;
 
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	// 1.0 = 지구 중력, 0.2 = 달 중력
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics")
 	float CustomGravityScale = 0.3f;
-	
+    
 	FVector LastFrameVelocity;
-	
+
+	// 부모의 OnHit을 덮어써서 톱날만의 튕기는 로직과 데미지를 구현합니다.
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
+    
+	virtual void ActivateProjectile(FVector SpawnLocation, FRotator SpawnRotation) override;
+	virtual void DeactivateProjectile() override;
 public:
-	// 🔹 날아가는 궤적 (항상 켜져 있는 컴포넌트)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VFX")
-	UNiagaraComponent* TrailEffectComp;
-
-	// 🔹 피격 이펙트들 (블루프린트에서 각각 다른 에셋 할당)
+	// 🔹 피격 이펙트들
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
-	UNiagaraSystem* AllyHitEffect;  // 아군(샐리/플레이어)이 맞았을 때
+	UNiagaraSystem* AllyHitEffect;  
 
-	// 🔹 벽에 맞고 튕겨 나갈 때 (예: 쇠가 긁히는 불꽃 스파크!)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	UNiagaraSystem* BounceSparkEffect;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Power = 3.0f;
 };

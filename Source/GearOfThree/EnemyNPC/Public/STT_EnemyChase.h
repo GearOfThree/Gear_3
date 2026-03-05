@@ -16,6 +16,9 @@ struct GEAROFTHREE_API FSTT_EnemyChaseInstanceData
 	
 	UPROPERTY(EditAnywhere, Category = "Context")
 	AActor* TargetActor = nullptr;
+	
+	UPROPERTY()
+	float TimeSinceLastUpdate = 0.1f;
 };
 
 //태스크 정의

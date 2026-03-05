@@ -21,9 +21,6 @@ public:
 	
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	TSubclassOf<class AAllyProjectile> ProjectileClass;
-
 	// 🔹 총구 화염 이펙트 (블루프린트에서 나이아가라 에셋 지정)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
 	UNiagaraSystem* MuzzleFlashEffect;

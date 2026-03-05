@@ -13,6 +13,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "GearOfThree.h"
+#include "MS_PlayerAnim.h"
 #include "Blueprint/UserWidget.h"
 #include "public/MS_PlayerController.h"
 #include "public/MS_WeaponWheelWidget.h"
@@ -65,6 +66,9 @@ AMS_Player::AMS_Player()
 	TeamSide = ETeamSide::Player;
 	
 	CombatDialogueComponent = CreateDefaultSubobject<UCombatDialogueComponent>(TEXT("CombatDialogue"));
+
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void AMS_Player::BeginPlay()
@@ -133,6 +137,13 @@ void AMS_Player::BeginPlay()
 	{
 		CombatDialogueComponent->StartCombatDialogue();
 	}
+	
+	// #################### 델리게이트 선언 ####################
+	if (HPComponent)
+	{
+		HPComponent->OnDead.AddUObject(this, &AMS_Player::HandleDead);
+	}
+	
 }
 
 void AMS_Player::Tick(float DeltaTime)
@@ -172,6 +183,7 @@ void AMS_Player::Tick(float DeltaTime)
 
 
 
+
 void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -179,9 +191,10 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMS_Player::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMS_Player::StopJumping);
+		// Roll (실패)
+		// EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMS_Player::DiveRoll);
+		// Jump (실패)
+		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMS_Player::OnJumpCompleted);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMS_Player::Move);
@@ -194,10 +207,11 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AMS_Player::Sprint);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AMS_Player::StopSprint);
 		
-		// Crouch(엄패 기능을 위해 필요함)
+		// Crouch
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AMS_Player::StartCrouch);
 		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AMS_Player::StopCrouch);
-	
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Canceled, this, &AMS_Player::StopCrouch);
+		
 		// ZoomIn // 토글 방식이 아닌 홀드 방식으로 설정
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Started,   this, &AMS_Player::StartADS);
 		EnhancedInputComponent->BindAction(ZoomInAction, ETriggerEvent::Completed, this, &AMS_Player::StopADS);
@@ -215,14 +229,26 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	}
 }
 
-void AMS_Player::Jump()
+void AMS_Player::DiveRoll(const FInputActionValue& Value)
 {
-	
+	if (auto* Anim = Cast<UMS_PlayerAnim>(GetMesh()->GetAnimInstance()))
+	{
+		Anim->PlayDiveRoll();
+	}
 }
 
-void AMS_Player::StopJumping()
+void AMS_Player::OnRollStart()
 {
 	
+	UE_LOG(LogTemp, Warning, TEXT("OnRollStart()"));
+	bIsRolling = true;
+	LaunchCharacter(GetActorForwardVector() * 800.f, true, false);
+}
+
+void AMS_Player::OnRollEnd()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnRollEnd()"));
+	bIsRolling = false;
 }
 
 void AMS_Player::Move(const FInputActionValue& Value)
@@ -310,11 +336,18 @@ void AMS_Player::StopSprint()
 
 void AMS_Player::StartCrouch(const FInputActionValue& Value)
 {
+	
+	UE_LOG(LogTemp, Warning, TEXT("StartCrouch()"));
+	bCrouched = true;
+	
 	Crouch(); 
 }
 
 void AMS_Player::StopCrouch()
 {
+	UE_LOG(LogTemp, Warning, TEXT("StopCrouch()"));
+	bCrouched = false;
+	
 	UnCrouch(); 
 }
 
@@ -576,6 +609,48 @@ void AMS_Player::HandleFire()
 	if (CurrentWeaponRef)
 	{
 		CurrentWeaponRef->Fire();
+	}
+}
+
+// 죽었을 시 
+// 델리게이트로 호출된다. 
+void AMS_Player::HandleDead()
+{
+	if (auto* Anim = Cast<UMS_PlayerAnim>(GetMesh()->GetAnimInstance()))
+	{
+		Anim->bIsDead = true;
+		
+		// 마지막 상태가 Crouch 상태였는지 확인한다. 
+		Anim->bWasCrouchedOnDeath = bCrouched; 
+		
+		GetWorld()->GetTimerManager().SetTimer
+		(
+			DeadTimerHandle,
+			this,
+			&AMS_Player::AfterDead,
+			2.0f,
+			false
+		);
+	}
+	
+	// 이동과 입력 막기 
+	GetCharacterMovement()->DisableMovement();
+}
+
+void AMS_Player::AfterDead()
+{
+	AMS_PlayerController* playerController = Cast<AMS_PlayerController>(GetController());
+	
+	if (!playerController || !playerController->IsLocalController()) return;
+	
+	if (playerController->GameOverUIWidget->IsInViewport())
+	{
+		// GameOver 위젯 
+		playerController->GameOverUIWidget->SetVisibility(ESlateVisibility::Visible);
+		
+		playerController->SetPause(true);
+		playerController->SetInputMode(FInputModeUIOnly());
+		playerController->SetShowMouseCursor(true);
 	}
 }
 

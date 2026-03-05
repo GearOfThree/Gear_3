@@ -12,8 +12,6 @@ AAllyNPCCharacter::AAllyNPCCharacter()
 	
 	//팀을 아군으로 설정합니다. 
 	TeamSide = ETeamSide::Ally;
-	MaxAmmo = 20;
-	CurrentAmmo = MaxAmmo;
 	
 	// 새로운 Skeletal Mesh 컴포넌트 생성 및 부착
 	// 이름은 구분하기 쉽게 'SionMesh' 등으로 설정합니다.
