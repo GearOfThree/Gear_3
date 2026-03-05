@@ -614,15 +614,14 @@ void AMS_Player::HandleDead()
 {
 	if (auto* Anim = Cast<UMS_PlayerAnim>(GetMesh()->GetAnimInstance()))
 	{
-		// 이건 HPComponent 에서 해주고 있어 
-		// Anim->bIsDead = true;
+		Anim->bIsDead = true;
 		
 		// 마지막 상태가 Crouch 상태였는지 확인한다. 
 		Anim->bWasCrouchedOnDeath = bCrouched; 
 	}
 	
-	// 이동과 입력 막기
-	// GetCharacterMovement()->DisableMovement();
+	// 이동과 입력 막기 // 
+	GetCharacterMovement()->DisableMovement();
 }
 
 void AMS_Player::ApplyRecoilFromWeapon(const FMS_RecoilSpec& Spec, int32 ShotIndex, bool bIsADS)
