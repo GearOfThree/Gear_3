@@ -33,6 +33,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UMS_HPComponent* HPComponent;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation | Combat")
+	UAnimMontage* HitReactMontage;
 public:
 	
 	virtual void ReceiveDamage_Implementation(float Damage, AActor* DamageCauser) override;
