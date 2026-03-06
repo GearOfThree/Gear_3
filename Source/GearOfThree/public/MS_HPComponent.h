@@ -40,6 +40,6 @@ public:
 	
 	// 델리게이트 설정
 	FOnDead OnDead;
-	FOnDead OnFall;
+	
 	
 };
