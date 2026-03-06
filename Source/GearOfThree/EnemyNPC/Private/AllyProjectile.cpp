@@ -1,6 +1,7 @@
 #include "AllyProjectile.h"
 #include "GearCharacter.h"
 #include "MS_DamageableCharacter.h"
+#include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -120,6 +121,11 @@ void AAllyProjectile::ActivateProjectile(FVector SpawnLocation, FRotator SpawnRo
        3.0f, 
        false
    );
+   if (TrailEffectComp)
+   {
+      // 파라미터로 true를 넘겨주면 "기존 상태를 리셋하고 처음부터 다시 재생하라"는 뜻입니다.
+      TrailEffectComp->Activate(true); 
+   }
 }
 
 // (3초가 지났거나, OnHit에서 호출되었거나)
@@ -129,4 +135,10 @@ void AAllyProjectile::DeactivateProjectile()
    Super::DeactivateProjectile();
    
    GetWorld()->GetTimerManager().ClearTimer(DeactivateTimerHandle);
+   
+   if (TrailEffectComp)
+   {
+      // 파라미터로 true를 넘겨주면 "기존 상태를 리셋하고 처음부터 다시 재생하라"는 뜻입니다.
+      TrailEffectComp->Deactivate(); 
+   }
 }
