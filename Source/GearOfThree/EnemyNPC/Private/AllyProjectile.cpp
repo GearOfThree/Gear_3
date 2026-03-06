@@ -56,7 +56,7 @@ void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
        }
 
        // 적(사이언) 명중!
-       if (HitCharacter->GetTeamSide() == ETeamSide::Enemy)
+       if (HitCharacter->GetTeamSide() != Shooter->TeamSide)
        {
           // 1. 피격 이펙트 재생
           if (EnemyHitEffect) 
@@ -75,7 +75,7 @@ void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
           {
               // UMS_Damageable 를 구현하고 있는지 확인한다. && TeamSide 가 Enemy 인지 확인한다. 
               // (위에서 Enemy 체크를 했지만, 확실하게 한 번 더 체크!)
-              if (OtherActor->Implements<UMS_Damageable>() && DamageableChar->TeamSide == ETeamSide::Enemy)
+              if (OtherActor->Implements<UMS_Damageable>() && DamageableChar->TeamSide != Shooter->TeamSide)
               {
                   // 1 : 함수를 실행할 대상 객체, 2 : 데미지 수치(Power), 3 : 가해자(this)
                   IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
