@@ -19,7 +19,7 @@ USTT_Fall::USTT_Fall(const FObjectInitializer& ObjectInitializer)
 
 EStateTreeRunStatus USTT_Fall::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition)
 {
-	// Tick이 안 와도 공전 덮어쓰기를 바로 끊기 위해 Enter에서 끊는다
+	// 공전 덮어쓰기를 바로 끊기 위해 Enter에서 끊는다
 	if (ALeech* Leech = Cast<ALeech>(Context.GetOwner()))
 	{
 		Leech->bOrbiting = false;
@@ -31,7 +31,7 @@ EStateTreeRunStatus USTT_Fall::EnterState(FStateTreeExecutionContext& Context, c
 	}
 	
 	FallVelocity = 0.f;
-	UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Enter"));
+	
 	return EStateTreeRunStatus::Running;
 }
 
@@ -44,7 +44,7 @@ EStateTreeRunStatus USTT_Fall::Tick(FStateTreeExecutionContext& Context, float D
 	
 	UObject* OwnerObj = Context.GetOwner();
 	AActor* OwnerActor = Cast<AActor>(OwnerObj);
-	UE_LOG(LogTemp, Warning, TEXT("Tick 돌고 있음"));
+	
 	if (!OwnerActor)
 	{
 		// owner가 actor가 아닐 수도 있어서, 컴포넌트면 outer로 한번 더 타고 올라감

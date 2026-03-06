@@ -21,8 +21,10 @@ public:
 	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
 	void OrbitToFall();
-	
+	UFUNCTION()
+	void AnyToDead();
 	
 	// ST 컴포넌트 생성
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI|StateTree", meta=(AllowPrivateAccess="true"))
@@ -37,12 +39,9 @@ public:
 	// 공전 가능 여부 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
 	bool bOrbiting = true;
-	// 낙하 상태 변환 여부 변수
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
-	bool bOrbitToFall = false;
 	// 사망 상태 변환 여부 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
-	bool bIsDead = false;
+	bool bIsDeadLeech = false;
 	
 	// 스폰 매니저가 세팅해줄 값들
 	UPROPERTY(BlueprintReadWrite, Category="Leech|Flock")
@@ -63,6 +62,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category="Leech|Flock")
 	FQuat OrbitPlaneQuat = FQuat::Identity;
+	
+	
 	
 	
 private:

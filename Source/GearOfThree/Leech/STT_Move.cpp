@@ -88,7 +88,7 @@ EStateTreeRunStatus USTT_Move::Tick(FStateTreeExecutionContext& Context, float D
 
 				// VInterpTo
 				Velocity = FMath::VInterpTo(Velocity, DesiredVel, DeltaTime, /*InterpSpeed*/ 5.f);
-				UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), Velocity.X, Velocity.Y, Velocity.Z);
+				
 				FVector Next = OwnerActor->GetActorLocation() + Velocity * DeltaTime;
 
 				FHitResult MoveHit;

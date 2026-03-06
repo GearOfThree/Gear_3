@@ -27,6 +27,7 @@ void ALeech::BeginPlay()
 	if (HPComponent)
 	{
 		HPComponent->OnFall.AddUObject(this, &ALeech::OrbitToFall);
+		HPComponent->OnDead.AddUObject(this, &ALeech::AnyToDead);
 	}
 	
 	if (StateTreeComp && StateTreeSlot)
@@ -86,10 +87,14 @@ void ALeech::Tick(float DeltaTime)
 
 void ALeech::OrbitToFall()
 {
-	bOrbitToFall = true;
-	
 	if (StateTreeComp && OrbitToFallEventTag.IsValid())
 	{
 		StateTreeComp->SendStateTreeEvent(OrbitToFallEventTag);
 	}
+}
+
+void ALeech::AnyToDead()
+{
+	bIsDeadLeech = true;
+	bOrbiting = false;
 }
