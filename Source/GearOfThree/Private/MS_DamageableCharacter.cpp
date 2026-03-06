@@ -30,6 +30,8 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 {
 	IMS_Damageable::ReceiveDamage_Implementation(Damage, DamageCauser);
 	
+	float PrevHP = HPComponent->CurrentHP;
+	
 	HPComponent->ApplyDamage(Damage);
 	
 	if (GEngine)
@@ -40,6 +42,15 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 			FColor::Green,
 			FString::Printf(TEXT("Current HP: %.1f Damage: %.0f"), HPComponent->CurrentHP, Damage)
 		);
+	}
+	
+	
+	// 현재 체력이 90이 되었어(리치 분기점) 
+	// 앞의 두 조건만으로 충분하지만 혹시 모르니 bool 변수로 중복 호출 가능성 제거
+	if (HPComponent->CurrentHP <= 90.f && PrevHP > 90.f && !bBroadcasted)
+	{
+		bBroadcasted = true;
+		HPComponent->OnFall.Broadcast();
 	}
 	
 	// 죽었어 
