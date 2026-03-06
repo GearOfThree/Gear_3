@@ -25,6 +25,10 @@ void UMS_HPComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void UMS_HPComponent::ApplyDamage(const float Damage)
 {
+	
 	CurrentHP = FMath::Clamp(CurrentHP - Damage, 0.f, MaxHP);
+	
+	// 각 대상자의 HP 변경을 알린다. 
+	OnHpChanged.Broadcast(GetOwner(), CurrentHP, MaxHP);
 }
 

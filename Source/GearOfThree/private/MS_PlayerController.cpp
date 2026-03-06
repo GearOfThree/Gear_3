@@ -31,6 +31,18 @@ void AMS_PlayerController::BeginPlay()
 		}
 	}
 	
+	if (MainUIClass)
+	{
+		MainUIWidget = CreateWidget<UMS_MainUI>(this, MainUIClass);
+		
+		if (MainUIWidget)
+		{
+			// 항상 보여야 하는 내용
+			MainUIWidget->AddToViewport();
+		}
+	}
+	
+	
 	if (CrosshairWidgetClass)
 	{
 		CrosshairWidget = CreateWidget<UUserWidget>(this, CrosshairWidgetClass);
@@ -85,4 +97,14 @@ bool AMS_PlayerController::ShouldUseTouchControls() const
 {
 	// are we on a mobile platform? Should we force touch?
 	return SVirtualJoystick::ShouldDisplayTouchInterface() || bForceTouchControls;
+}
+
+void AMS_PlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	
+	if (MainUIWidget)
+	{
+		MainUIWidget->BindToHpComponent(InPawn);
+	}
 }

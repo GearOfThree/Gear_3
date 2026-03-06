@@ -4,14 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MS_HPWidget.generated.h"
+#include "MS_MainUI.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GEAROFTHREE_API UMS_HPWidget : public UUserWidget
+class GEAROFTHREE_API UMS_MainUI : public UUserWidget
 {
 	GENERATED_BODY()
+	
+public:
+	UPROPERTY(meta=(BindWidget))
+	class UMS_HPUI* PlayerHPUI;
+	
+	void BindToHpComponent(APawn* Pawn);
+	
 	
 };

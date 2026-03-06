@@ -7,7 +7,7 @@
 #include "MS_HPComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnDead)
-
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHpChanged, AActor*, float, float)
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GEAROFTHREE_API UMS_HPComponent : public UActorComponent
 {
@@ -41,5 +41,5 @@ public:
 	// 델리게이트 설정
 	FOnDead OnDead;
 	
-	
+	FOnHpChanged OnHpChanged;
 };

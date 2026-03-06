@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MS_MainUI.h"
+#include "MS_Player.h"
 #include "GameFramework/PlayerController.h"
 #include "MS_PlayerController.generated.h"
 
@@ -49,7 +51,11 @@ protected:
 	/** Returns true if the player should use UMG touch controls */
 	bool ShouldUseTouchControls() const;
 	
+	virtual void OnPossess(APawn* InPawn) override;
+	
 public:
+	
+	
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> CrosshairWidgetClass;
 	
@@ -61,4 +67,10 @@ public:
 	
 	UPROPERTY()
 	TObjectPtr<UUserWidget> GameOverUIWidget;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UMS_MainUI> MainUIClass;
+	
+	UPROPERTY()
+	TObjectPtr<UMS_MainUI> MainUIWidget;
 };
