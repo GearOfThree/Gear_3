@@ -61,6 +61,12 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 		{
 			NPC->Die(); // 애니메이션 재생, 충돌 끄기, 3초 뒤 파괴 실행!
 		}
+	}else
+	{
+		if (HitReactMontage && GetMesh() && GetMesh()->GetAnimInstance())
+		{
+			GetMesh()->GetAnimInstance()->Montage_Play(HitReactMontage);
+		}
 	}
 	
 }

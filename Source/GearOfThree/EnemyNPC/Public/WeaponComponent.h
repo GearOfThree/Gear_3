@@ -5,15 +5,6 @@
 #include "GearWeaponBase.h" // AGearWeaponBase를 사용하기 위해 필요할 수 있습니다.
 #include "WeaponComponent.generated.h"
 
-USTRUCT(BlueprintType)
-struct FWeaponData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AGearWeaponBase> WeaponClass; 
-};
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class GEAROFTHREE_API UWeaponComponent : public UActorComponent
 {
@@ -45,7 +36,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Stats")
 	float FireRate = 0.1f; // 0.1초에 한 발씩 발사
 
-	
+	// 무기 발사 시 상체에 재생할 애니메이션 몽타주
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation | Combat")
+	class UAnimMontage* FireMontage;
 private:
 	float LastFireTime = 0.0f; // 마지막으로 쏜 시간 기억
 
@@ -56,4 +49,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AGearWeaponBase> CurrentWeapon;
+	
+protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };
