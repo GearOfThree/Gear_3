@@ -126,5 +126,5 @@ void ANPCCharacter::Die()
 
 void ANPCCharacter::DestroyAfterDeath()
 {
-	Destroy();
+	this->Destroy();
 }

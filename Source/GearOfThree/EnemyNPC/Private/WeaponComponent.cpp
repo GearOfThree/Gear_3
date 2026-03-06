@@ -63,9 +63,24 @@ void UWeaponComponent::Fire()
     CurrentWeapon->Fire();
     CurrentAmmo--;
     
-    // 🚨 [추가] 방금 쐈으니까 시간 기록!
+    // 시간 기록
     LastFireTime = CurrentTime; 
 
+    // 총알 발사 직후 애니메이션 몽타주 재생
+    if (FireMontage)
+    {
+        // 이 무기를 들고 있는 주인이 '캐릭터'인지 확인합니다.
+        ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+        if (OwnerCharacter && OwnerCharacter->GetMesh())
+        {
+            // 캐릭터의 스켈레탈 메시에 연결된 AnimInstance를 가져옵니다.
+            UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+            if (AnimInstance)
+            {
+                AnimInstance->Montage_Play(FireMontage);
+            }
+        }
+    }
 }
 
 
@@ -88,6 +103,15 @@ void UWeaponComponent::EndReload()
     CurrentAmmo = MaxAmmo;
     bIsReloading = false;
     
+}
+
+void UWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->Destroy();
+    }
+    Super::EndPlay(EndPlayReason);
 }
 
 void UWeaponComponent::SetFireRate(float Rate)
