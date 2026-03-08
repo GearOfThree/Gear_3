@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MS_MainUI01.h"
 #include "GameFramework/PlayerController.h"
 #include "MS_PlayerController.generated.h"
 
@@ -42,6 +43,8 @@ protected:
 
 	/** Gameplay initialization */
 	virtual void BeginPlay() override;
+	
+	virtual void OnPossess(APawn* InPawn) override;
 
 	/** Input mapping context setup */
 	virtual void SetupInputComponent() override;
@@ -61,4 +64,13 @@ public:
 	
 	UPROPERTY()
 	TObjectPtr<UUserWidget> GameOverUIWidget;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI")
+	TSubclassOf<UMS_MainUI01> MainUIClass;
+
+	UPROPERTY()
+	UMS_MainUI01* MainUIWidget = nullptr;
+
+	UPROPERTY()
+	APawn* CachedPawn = nullptr;
 };
