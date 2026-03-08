@@ -60,10 +60,16 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
     // 1. 적과의 거리 계산
     float Distance = Owner->GetDistanceTo(Target);
 
+    // 추격으로 돌아가는 기준을 사거리보다 조금 더 멀게(1.2배) 잡습니다.
+    // 사거리가 3000이라면, 3600을 벗어날 때까지는 Attack 상태를 유지하며 쫓아갑니다.
+    if (Distance > InstanceData.AttackRange * 1.2f) 
+    {
+        return EStateTreeRunStatus::Failed; // 정말 멀어졌을 때만 Chase로 복귀
+    }
+
     // 사거리 밖이면 적을 향해 뛰어갑니다!
     if (Distance > InstanceData.AttackRange)
     {
-        // 💡 이제 이 무거운 길찾기 함수가 1초에 60번이 아니라 10번만 실행되어 렉이 사라집니다!
         AIC->MoveToActor(Target, InstanceData.AttackRange * 0.8f); 
         
         Owner->bUseControllerRotationYaw = false; 
@@ -80,11 +86,22 @@ EStateTreeRunStatus FSTT_AttackTarget::Tick(FStateTreeExecutionContext& Context,
         Owner->bUseControllerRotationYaw = true; 
         AIC->SetFocus(Target);
 
-        // 💡 1초에 10번씩 방아쇠를 당기라고 명령하므로, 
-        // WeaponComponent의 자동 연사 쿨타임이 정상적으로 촘촘하게 작동합니다!
-        if (UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>())
+        // 엄폐 중이었을 수 있으니 무조건 일어섭니다!
+        Owner->UnCrouch();
+
+        // 기어스의 빼꼼 샷: Target이 내 눈에 보이는지(LineOfSight) 확인!
+        if (AIC->LineOfSightTo(Target))
         {
-            WeaponComp->Fire(); 
+            if (UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>())
+            {
+                WeaponComp->Fire(); 
+            }
+        }
+        else
+        {
+            // 일어섰는데도 안 보인다면, 타겟이 엄폐물 뒤로 숨었거나 이동한 것입니다.
+            // 이럴 때는 다시 추격(Chase) 상태로 돌아가도록 트리에 알립니다.
+            return EStateTreeRunStatus::Failed; 
         }
     }
 
