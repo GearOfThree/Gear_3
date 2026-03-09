@@ -7,10 +7,13 @@
 
 EStateTreeRunStatus FSTT_CoverTarget::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
-    UE_LOG(LogTemp, Log, TEXT("🛡️ [STEP 1] Enter Cover State"));
 
     ANPCCharacter* Owner = Cast<ANPCCharacter>(Context.GetOwner());
-    if (!Owner) { UE_LOG(LogTemp, Error, TEXT("❌ FAIL: Owner is NOT ANPCCharacter!")); return EStateTreeRunStatus::Failed; }
+    if (!Owner)
+    {
+        UE_LOG(LogTemp, Error, TEXT("❌ FAIL: Owner is NOT ANPCCharacter!"));
+        return EStateTreeRunStatus::Failed;
+    }
 
     AGearAIController* GearAIC = Cast<AGearAIController>(Owner->GetController());
     if (!GearAIC) { 
@@ -20,9 +23,12 @@ EStateTreeRunStatus FSTT_CoverTarget::EnterState(FStateTreeExecutionContext& Con
     }
 
     const FInstanceDataType& InstanceData = Context.GetInstanceData<FInstanceDataType>(*this);
-    if (!InstanceData.CoverQuery) { UE_LOG(LogTemp, Error, TEXT("❌ FAIL: CoverQuery Asset is MISSING!")); return EStateTreeRunStatus::Failed; }
+    if (!InstanceData.CoverQuery)
+    {
+        UE_LOG(LogTemp, Error, TEXT("❌ FAIL: CoverQuery Asset is MISSING!"));
+        return EStateTreeRunStatus::Failed;
+    }
 
-    UE_LOG(LogTemp, Log, TEXT("🛡️ [STEP 2] Calling FindCoverLocation..."));
     GearAIC->FindCoverLocation(InstanceData.CoverQuery);
     
     return EStateTreeRunStatus::Running;
@@ -57,8 +63,15 @@ EStateTreeRunStatus FSTT_CoverTarget::Tick(FStateTreeExecutionContext& Context, 
     }
     else if (GearAIC->GetMoveStatus() == EPathFollowingStatus::Idle)
     {
-        Owner->Crouch();
-        return EStateTreeRunStatus::Succeeded;
+        if (!Owner->bIsCrouched) 
+        {
+            UE_LOG(LogTemp, Log, TEXT("✅ Cover Reached: Doing Crouch"));
+            Owner->Crouch();
+        }
+    
+        // 🚨 바로 Succeeded를 리턴하지 말고 Running을 유지합니다.
+        // 이렇게 해야 ExitState가 호출되지 않아 앉은 상태가 유지됩니다.
+        return EStateTreeRunStatus::Running; 
     }
 
     return EStateTreeRunStatus::Running;
