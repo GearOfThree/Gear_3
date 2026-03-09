@@ -177,8 +177,8 @@ void AMS_Player::Tick(float DeltaTime)
 
 	DecaySustainTick(DeltaTime);
 	ApplyCameraRecoilTick(DeltaTime);
-	ApplyWeaponKickTick(DeltaTime);
-	PlayPendingShake();
+	// ApplyWeaponKickTick(DeltaTime);
+	// PlayPendingShake();
 }
 
 

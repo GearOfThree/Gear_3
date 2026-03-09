@@ -19,12 +19,12 @@ void UMS_HPBarUI::UpdateHp(float CurrentHP, float MaxHP)
 	UE_LOG(LogTemp, Warning, TEXT("SetPercent = %.2f"), Percent);
 	PB_HP->SetPercent(Percent);
 
-	if (Txt_HP)
-	{
-		Txt_HP->SetText(
-			FText::FromString(
-				FString::Printf(TEXT("%.0f / %.0f"), CurrentHP, MaxHP)
-			)
-		);
-	}
+	// if (Txt_HP)
+	// {
+	// 	Txt_HP->SetText(
+	// 		FText::FromString(
+	// 			FString::Printf(TEXT("%.0f / %.0f"), CurrentHP, MaxHP)
+	// 		)
+	// 	);
+	// }
 }
