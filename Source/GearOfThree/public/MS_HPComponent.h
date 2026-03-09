@@ -7,7 +7,7 @@
 #include "MS_HPComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnDead)
-
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHpChanged, float, float);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GEAROFTHREE_API UMS_HPComponent : public UActorComponent
 {
@@ -29,7 +29,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
 	float MaxHP = 100.f;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
 	float CurrentHP = 100.f;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -42,4 +42,5 @@ public:
 	FOnDead OnDead;
 	FOnDead OnFall;
 	
+	FOnHpChanged OnHpChanged;
 };

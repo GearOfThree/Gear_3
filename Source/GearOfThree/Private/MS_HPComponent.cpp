@@ -25,6 +25,18 @@ void UMS_HPComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void UMS_HPComponent::ApplyDamage(const float Damage)
 {
+	const float OldHP = CurrentHP;
+	
 	CurrentHP = FMath::Clamp(CurrentHP - Damage, 0.f, MaxHP);
+	
+	UE_LOG(LogTemp, Warning, TEXT("ApplyDamage / %.1f -> %.1f"), OldHP, CurrentHP);
+	
+	if (!FMath::IsNearlyEqual(OldHP, CurrentHP))
+	{
+		
+		UE_LOG(LogTemp, Warning, TEXT("Broadcast OnHpChanged / CurrentHP=%.1f MaxHP=%.1f"), CurrentHP, MaxHP);
+		// 플레이어가 사용한다. 
+		OnHpChanged.Broadcast(CurrentHP, MaxHP);
+	}
 }
 

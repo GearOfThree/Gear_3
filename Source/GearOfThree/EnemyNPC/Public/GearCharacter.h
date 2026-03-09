@@ -28,4 +28,6 @@ public:
 	// 🔹 피아 식별 함수: 상대방이 나랑 적대적인 관계(Hostile)인지 확인합니다.
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	bool IsHostile(AGearCharacter* OtherCharacter) const;
+	
+	void ChangeTeamSide(ETeamSide team);
 };

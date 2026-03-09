@@ -52,6 +52,35 @@ void AMS_PlayerController::BeginPlay()
 			GameOverUIWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+	
+	// Main UI 생성
+	if (MainUIClass)
+	{
+		MainUIWidget = CreateWidget<UMS_MainUI01>(this, MainUIClass);
+
+		if (MainUIWidget)
+		{
+			MainUIWidget->AddToViewport();
+		}
+	}
+
+	// Pawn이 이미 저장돼 있으면 여기서 바인딩
+	if (MainUIWidget && CachedPawn)
+	{
+		MainUIWidget->BindToPlayer(CachedPawn);
+	}
+}
+
+void AMS_PlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	
+	CachedPawn = InPawn;
+
+	if (MainUIWidget && InPawn)
+	{
+		MainUIWidget->BindToPlayer(InPawn);
+	}
 }
 
 void AMS_PlayerController::SetupInputComponent()
