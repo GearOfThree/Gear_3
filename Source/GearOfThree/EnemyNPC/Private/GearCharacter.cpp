@@ -38,3 +38,8 @@ bool AGearCharacter::IsHostile(AGearCharacter* OtherCharacter) const
 	// 위 조건에 안 걸렸고 서로 팀이 다르다면? 무조건 적(Enemy)임
 	return true;
 }
+
+void AGearCharacter::ChangeTeamSide(ETeamSide team)
+{
+	this->TeamSide = team;
+}

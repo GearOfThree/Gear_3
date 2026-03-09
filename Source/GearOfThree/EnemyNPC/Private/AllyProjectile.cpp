@@ -63,7 +63,6 @@ void AAllyProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
           {
              UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EnemyHitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
           }
-          
           // =====================================================================
           // 🚨 [추가된 동료분의 데미지 시스템 연동 로직]
           // =====================================================================
