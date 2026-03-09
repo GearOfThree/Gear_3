@@ -25,8 +25,8 @@ void ALeech::BeginPlay()
 	Super::BeginPlay();
 	
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ALeech::OnRushHit);
-	HPComponent->MaxHP = 30;
-	HPComponent->CurrentHP = 30;
+	HPComponent->MaxHP = 110;
+	HPComponent->CurrentHP = 110;
 	
 	// 델리게이트 호출
 	if (HPComponent)
