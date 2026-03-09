@@ -26,7 +26,7 @@ public:
 
 	// 🔹 화면이 까맣게 변하는 데 걸리는 시간 (예: 2초)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Transition")
-	float FadeOutTime = 1.0f;
+	float FadeOutTime = 2.0f;
 
 	UFUNCTION()
 	void OnZoneOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
