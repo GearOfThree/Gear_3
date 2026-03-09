@@ -6,6 +6,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/RandomStream.h"
 #include "GameplayTagsManager.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // 기본 생성자
 ALeech::ALeech()
@@ -16,12 +18,15 @@ ALeech::ALeech()
 	StateTreeComp = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComp"));
 	// 팀 사이드를 적으로 설정
 	TeamSide = ETeamSide::Enemy;
-
 }
 
 void ALeech::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ALeech::OnRushHit);
+	HPComponent->MaxHP = 30;
+	HPComponent->CurrentHP = 30;
 	
 	// 델리게이트 호출
 	if (HPComponent)
@@ -97,4 +102,33 @@ void ALeech::AnyToDead()
 {
 	bIsDeadLeech = true;
 	bOrbiting = false;
+}
+
+void ALeech::OnRushHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!bIsRush)
+	{
+		return;
+	}
+
+	if (!OtherActor || OtherActor == this)
+	{
+		return;
+	}
+
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+
+	bRushShouldEnd = true;
+
+	if (OtherActor == PlayerPawn)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Player"));
+		bRushHitPlayer = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Non-Player: %s"), *OtherActor->GetName());
+		bRushHitPlayer = false;
+	}
 }
