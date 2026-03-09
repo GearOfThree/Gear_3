@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "InputActionValue.h"
+#include "NiagaraFunctionLibrary.h"
 #include "SawGunActor.h"
 #include "WeaponComponent.h"
 
@@ -79,5 +80,75 @@ void AEnemyNPCCharacter::FireSawBlade(const FInputActionValue& Value)
 	{
 		// WeaponComponent -> SawGun -> Projectile Spawn 순으로 실행됨
 		WeaponComponent->Fire();
+	}
+}
+
+void AEnemyNPCCharacter::ReceiveDamage_Implementation(float Damage, AActor* DamageCauser)
+{
+	if (HPComponent->IsDead) return;
+
+	HPComponent->ApplyDamage(Damage);
+
+	// 1. 체력 퍼센트 계산
+	float HPPercent = (HPComponent->CurrentHP / HPComponent->MaxHP) * 100.f;
+
+	// 2. 체력 구간별 Gibbing 로직 (75%, 50%, 25%)
+	// if문을 독립적으로 배치하여 한 번에 큰 데미지를 입어도 순차적으로 터지게 할 수 있습니다.
+	if (HPPercent <= 75.f && !bGibStage75)
+	{
+		bGibStage75 = true;
+		ExecutePartialGib(BoneToHide75);
+	}
+
+	if (HPPercent <= 50.f && !bGibStage50)
+	{
+		bGibStage50 = true;
+		ExecutePartialGib(BoneToHide50);
+	}
+
+	if (HPPercent <= 25.f && !bGibStage25)
+	{
+		bGibStage25 = true;
+		ExecutePartialGib(BoneToHide25);
+	}
+
+	// 3. 사망 판정
+	if (HPComponent->CurrentHP <= 0.f)
+	{
+		HPComponent->IsDead = true;
+		// 2. 피보라 이펙트 재생
+		if (BloodEffect)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BloodEffect, GetActorLocation());
+		}
+		this->Die(); 
+	}
+	else
+	{
+		// 살아있을 때만 히트 리액션 재생
+		if (HitReactMontage && GetMesh() && GetMesh()->GetAnimInstance())
+		{
+			GetMesh()->GetAnimInstance()->Montage_Play(HitReactMontage);
+		}
+	}
+}
+
+void AEnemyNPCCharacter::ExecutePartialGib(FName BoneName)
+{
+	if (SionMesh)
+	{
+		// 1. 본 숨기기 (해당 본과 그 자식들까지 모두 물리/시각적으로 제외)
+		// PBO_None: 해당 본 아래의 모든 자식 본들도 숨깁니다.
+		SionMesh->HideBoneByName(BoneName, PBO_None);
+
+		// 2. 피보라 이펙트 재생
+		if (BloodEffect)
+		{
+			FVector BoneLocation = SionMesh->GetSocketLocation(BoneName);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BloodEffect, BoneLocation);
+		}
+
+		// 3. 로그 출력
+		UE_LOG(LogTemp, Warning, TEXT("💥 Gibbing Stage Triggered: %s"), *BoneName.ToString());
 	}
 }

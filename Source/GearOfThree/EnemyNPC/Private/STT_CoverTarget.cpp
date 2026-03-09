@@ -65,12 +65,9 @@ EStateTreeRunStatus FSTT_CoverTarget::Tick(FStateTreeExecutionContext& Context, 
     {
         if (!Owner->bIsCrouched) 
         {
-            UE_LOG(LogTemp, Log, TEXT("✅ Cover Reached: Doing Crouch"));
             Owner->Crouch();
         }
-    
-        // 🚨 바로 Succeeded를 리턴하지 말고 Running을 유지합니다.
-        // 이렇게 해야 ExitState가 호출되지 않아 앉은 상태가 유지됩니다.
+
         return EStateTreeRunStatus::Running; 
     }
 
