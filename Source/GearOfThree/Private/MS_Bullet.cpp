@@ -87,7 +87,7 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	*Hit.ImpactPoint.ToString(),
 	*Hit.ImpactNormal.ToString());
 
-	DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 20.f, 12, FColor::Red, false, 2.f);
+	// DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 20.f, 12, FColor::Red, false, 2.f);
 	
 	// 총알이 총알 자체와 부딪혔는지 확인한다.
 	if (!OtherActor || OtherActor == this) return;
@@ -104,15 +104,15 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		// 3 : AActor* DamageCauser
 		IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
 		
-		DrawDebugString(
-			GetWorld(),
-			GetActorLocation() + FVector(0,0,100),
-			TEXT(""),
-			nullptr,
-			FColor::White,
-			2.0f,
-			true
-		);	
+		// DrawDebugString(
+		// 	GetWorld(),
+		// 	GetActorLocation() + FVector(0,0,100),
+		// 	TEXT(""),
+		// 	nullptr,
+		// 	FColor::White,
+		// 	2.0f,
+		// 	true
+		// );	
 	}
 	
 	// 사운드 

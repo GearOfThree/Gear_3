@@ -176,18 +176,18 @@ void AMS_Weapon::FireTowards(const FVector& AimPoint)
 	
 	
 	
-	DrawDebugSphere(GetWorld(), MuzzleLoc, 6.f, 12, FColor::Red, false, 2.f);
-	DrawDebugLine(GetWorld(), MuzzleLoc, AimPoint, FColor::Green, false, 2.f, 0, 1.f);
-	DrawDebugLine(GetWorld(), MuzzleLoc, MuzzleLoc + BulletRot.Vector() * 2000.f, FColor::Red, false, 2.f, 0, 1.f);
-	
-	DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Yellow, false, 3.f);
+	// DrawDebugSphere(GetWorld(), MuzzleLoc, 6.f, 12, FColor::Red, false, 2.f);
+	// DrawDebugLine(GetWorld(), MuzzleLoc, AimPoint, FColor::Green, false, 2.f, 0, 1.f);
+	// DrawDebugLine(GetWorld(), MuzzleLoc, MuzzleLoc + BulletRot.Vector() * 2000.f, FColor::Red, false, 2.f, 0, 1.f);
+	//
+	// DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Yellow, false, 3.f);
 	
 	
 	FTimerHandle H;
 	GetWorld()->GetTimerManager().SetTimer(H, [this, Bullet]()
 	{
 		if (!IsValid(Bullet)) return;
-		DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Cyan, false, 3.f);
+		// DrawDebugSphere(GetWorld(), Bullet->GetActorLocation(), 20.f, 12, FColor::Cyan, false, 3.f);
 	}, 0.2f, false);
 	// const FVector V = mesh->GetPhysicsLinearVelocity();
 	
