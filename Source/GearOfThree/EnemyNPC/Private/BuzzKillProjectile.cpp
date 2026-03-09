@@ -164,9 +164,7 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
         {
             return;
         }
-
-        UE_LOG(LogTemp, Warning, TEXT("BuzzKill 명중 (Shooter: %s -> Victim: %s)"), *Shooter->GetName(), *HitCharacter->GetName());
-
+        
         if (HitCharacter->GetTeamSide() == ETeamSide::Ally || HitCharacter->GetTeamSide() == ETeamSide::Player)
         {
             if (AllyHitEffect)

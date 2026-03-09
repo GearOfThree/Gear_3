@@ -1,16 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EnemyNPCCharacter.h"
+
+#include "GearAIController.h"
 #include "Engine/LocalPlayer.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "GearOfThree.h"
 #include "SawGunActor.h"
 #include "WeaponComponent.h"
 
@@ -54,6 +51,13 @@ AEnemyNPCCharacter::AEnemyNPCCharacter()
 	// 사이언 전용 설정
 	TeamSide = ETeamSide::Enemy; // 팀을 Enemy로 설정
 
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+	}
+	
+	AIControllerClass = AGearAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AEnemyNPCCharacter::BeginPlay()
