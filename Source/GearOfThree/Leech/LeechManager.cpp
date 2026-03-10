@@ -160,9 +160,6 @@ void ALeechManager::InfectionDirection()
 	
 	for (AActor* Actor : NPC)
 	{
-		AGearCharacter* targetNPC = Cast<AGearCharacter>(Actor);
-		if (!targetNPC) continue;
-		if (!targetNPC->IsAlive()) continue;
-		targetNPC->TeamSide;
+		
 	}
 }
