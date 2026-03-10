@@ -54,7 +54,7 @@ void ALeechProjectile::BeginPlay()
 	}
 	
 	Velocity = target->GetActorLocation() - GetActorLocation();
-	Velocity /= 1.2f;
+	Velocity /= 1.15f;
 	Velocity.Z = 550.0f;
 }
 
