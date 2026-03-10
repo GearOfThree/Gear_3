@@ -23,6 +23,12 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+	
+	
+	// 충돌 박스 설정
+	UPROPERTY(EditAnywhere, Category="Manager|Infect")
+	TObjectPtr<class USphereComponent> SphereComp;
 	
 	// 매니저 스폰 직후 Location 값 저장(이후 범위 설정)
 	UPROPERTY(EditAnywhere, Category="Manager|Move")
@@ -37,8 +43,21 @@ public:
 	UPROPERTY(EditAnywhere, Category="Manager|Move")
 	bool Moveable = true;
 	// 매니저 이동 함수 및 함수 재생 타이머
-	FTimerHandle TimerHandle_ChangeDir;
 	void ChangeDirection();
+	FTimerHandle TimerHandle_ChangeDir;
+	
+	// 매니저 감염 함수 및 함수 재생 타이머
+	void InfectionDirection();
+	FTimerHandle TimerHandle_Infect;
+	// 감염 대상 배열
+	UPROPERTY(EditAnywhere, Category="Manager|Move")
+	TArray<AActor*> NPC;
+	// 감염시킬 대상의 존재 여부
+	UPROPERTY(EditAnywhere, Category="Manager|Move")
+	bool bInfectable = false;
+	// 감염 종료 후 잠시 위로 이동하는 시간 설정
+	UPROPERTY(EditAnywhere, Category="Manager|Move")
+	float OffsetTime = 1.f;
 	
 	// 리치 스폰 공장
 	UPROPERTY(EditAnywhere, Category="Leech|Spawn")

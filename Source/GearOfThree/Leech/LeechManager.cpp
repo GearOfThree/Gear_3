@@ -2,6 +2,8 @@
 
 
 #include "Leech/LeechManager.h"
+
+#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -10,7 +12,10 @@ ALeechManager::ALeechManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SetRootComponent(SphereComp);
+	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 // Called when the game starts or when spawned
@@ -27,13 +32,22 @@ void ALeechManager::BeginPlay()
 	// 초기 방향 설정
 	ChangeDirection();
 	
-	// 타이머 설정
+	// 방향 전환 타이머 설정
 	GetWorldTimerManager().SetTimer(
 	   TimerHandle_ChangeDir,
 	   this,
 	   &ALeechManager::ChangeDirection,
 	   2.0f,
 	   true
+   );
+	
+	// 감염 타이머 설정
+	GetWorldTimerManager().SetTimer(
+	   TimerHandle_Infect,
+	   this,
+	   &ALeechManager::InfectionDirection,
+	   5.0f,
+	   false
    );
 }
 
@@ -42,8 +56,50 @@ void ALeechManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	// 현재 위치와 스폰 지점으로부터의 거리 계산
+	// 현재 위치 계산
 	FVector NowLocation = GetActorLocation();
+	
+	// 감염 가능하면
+	if (bInfectable)
+	{
+		// 아군 NPC 검사해서 돌진 - Tick 내부의 for문이 너무 무거우면 다른 방향으로 수정 
+		for (AActor* Actor : NPC)
+		{
+			AGearCharacter* target = Cast<AGearCharacter>(Actor);
+			if (!target) continue;
+			if (target->TeamSide == ETeamSide::Ally)
+			{
+				Direction = (target->GetActorLocation() - NowLocation).GetSafeNormal();
+				SetActorLocation(NowLocation + Direction * 2000 * DeltaTime);
+				return;
+			}
+		}
+		// 검사했는데 그새 아군 NPC가 다 죽어버렸거나 이미 다 감염됐다면
+		// 1초 동안 위로 솟구침
+		if (OffsetTime >= 0)
+		{
+			SetActorLocation(NowLocation + FVector(0,0,2000) * DeltaTime);
+			OffsetTime -= DeltaTime;
+			return; // 1초가 지나야만 다음으로 진행 가능
+		}
+		// 감염 가능 여부를 다시 false로 변경하고
+		bInfectable = false;
+		// 모든 리치들의 상태를 Fall로 변경
+		for (ALeech* Leech : SpawnedLeeches)
+		{
+			if (!IsValid(Leech)) continue;
+			Leech->OrbitToFall();
+		}
+		// 안전하게 그 이후 5초가 지나면
+		if (OffsetTime >= -5.f)
+		{
+			OffsetTime -= DeltaTime;
+			return; // 5초가 지나야만 다음으로 진행 가능
+		}
+		Destroy();
+	}
+	
+	// 스폰 지점으로부터의 거리 계산
 	double Distance = UKismetMathLibrary::VSize(NowLocation - SpawnLocation);
 	
 	// 거리가 너무 떨어지거나 높이 값이 튀면
@@ -53,6 +109,15 @@ void ALeechManager::Tick(float DeltaTime)
 		Direction = (SpawnLocation - NowLocation).GetSafeNormal();
 	}
 	SetActorLocation(NowLocation + Direction * Speed * DeltaTime);
+}
+
+void ALeechManager::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	Super::NotifyActorBeginOverlap(OtherActor);
+	if (auto* target = Cast<AGearCharacter>(OtherActor))
+	{
+		target->ChangeTeamSide(ETeamSide::Enemy);
+	}
 }
 
 void ALeechManager::SpawnLeeches()
@@ -142,4 +207,43 @@ void ALeechManager::ChangeDirection()
 	// 이동 불가능 상황이면
 	// 방향은 그대로 영벡터, 다음 호출 시 이동 가능하도록 설정
 	Moveable = true;
+}
+
+void ALeechManager::InfectionDirection()
+{
+	// 현재 궤도를 돌고 있는 리치 검사
+	int32 IsOrbitingNumber = 0;
+	for (ALeech* Leech : SpawnedLeeches)
+	{
+		if (!IsValid(Leech)) continue;
+
+		if (Leech->bOrbiting)
+		{
+			IsOrbitingNumber++;
+			Leech->OrbitRadius = 100.f;
+		}
+	}
+	
+	// 현재 궤도를 돌고 있는 리치가 없으면 감염 불가능
+	if (IsOrbitingNumber == 0) return;
+	
+	// 감염 대상 판단 후 가능할 경우 변수 설정
+	UGameplayStatics::GetAllActorsOfClass(this, AGearCharacter::StaticClass(), NPC);
+	for (AActor* Actor : NPC)
+	{
+		AGearCharacter* target = Cast<AGearCharacter>(Actor);
+		if (!target) continue;
+		if (target->TeamSide == ETeamSide::Ally)
+		{
+			bInfectable = true;
+			return;
+		}
+	}
+	// 다 검사했는데 감염시킬 대상이 없음
+	// 모든 리치들의 상태를 Fall로 변경
+	for (ALeech* Leech : SpawnedLeeches)
+	{
+		if (!IsValid(Leech)) continue;
+		Leech->OrbitToFall();
+	}
 }

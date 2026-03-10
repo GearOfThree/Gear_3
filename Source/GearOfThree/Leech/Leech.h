@@ -39,9 +39,18 @@ public:
 	// 공전 가능 여부 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
 	bool bOrbiting = true;
+	// 돌진 상태 확인 변수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
+	bool bIsRush = false;
 	// 사망 상태 변환 여부 변수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
 	bool bIsDeadLeech = false;
+	// 원거리 공격 쿨타임
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
+	float LastShootTime = -99999.f; // 처음엔 쿨타임 끝난 상태처럼
+	// 돌진 공격 쿨타임
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Leech|State")
+	float LastRushTime = -99999.f; // 처음엔 쿨타임 끝난 상태처럼
 	
 	// 스폰 매니저가 세팅해줄 값들
 	UPROPERTY(BlueprintReadWrite, Category="Leech|Flock")
@@ -63,8 +72,19 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Leech|Flock")
 	FQuat OrbitPlaneQuat = FQuat::Identity;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Rush")
+	bool bRushShouldEnd = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Rush")
+	bool bRushHitPlayer = false;
 	
-	
+	UFUNCTION()
+	void OnRushHit(
+		UPrimitiveComponent* HitComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit);
 	
 private:
 	float OrbitAngleDeg = 0.f;
