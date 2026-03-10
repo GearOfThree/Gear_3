@@ -137,6 +137,12 @@ protected: // 초점 변경 내용
 	UPROPERTY(EditAnywhere, Category="ADS|Settings")
 	FVector ADSSocketOffset = FVector(0.0f, 60.0f, 65.0f);
 	
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float NormalLookSensitivity = 1.0f;
+	
+	UPROPERTY(EditAnywhere, Category="ADS|Settings")
+	float ADSLookSensitivity = 0.3f;
+	
 public:
 	// 런타임 캐시(현재 컴포넌트 값 저장용)
 	float CachedArmLength = 0.f;

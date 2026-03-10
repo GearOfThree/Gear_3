@@ -177,8 +177,8 @@ void AMS_Player::Tick(float DeltaTime)
 
 	DecaySustainTick(DeltaTime);
 	ApplyCameraRecoilTick(DeltaTime);
-	// ApplyWeaponKickTick(DeltaTime);
-	// PlayPendingShake();
+	ApplyWeaponKickTick(DeltaTime);
+	PlayPendingShake();
 }
 
 
@@ -260,15 +260,6 @@ void AMS_Player::Move(const FInputActionValue& Value)
 	DoMove(MovementVector.X, MovementVector.Y);
 }
 
-void AMS_Player::Look(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	// route the input
-	DoLook(LookAxisVector.X, LookAxisVector.Y);
-}
-
 void AMS_Player::DoMove(float Right, float Forward)
 {
 	if (GetController() != nullptr)
@@ -289,14 +280,22 @@ void AMS_Player::DoMove(float Right, float Forward)
 	}
 }
 
+void AMS_Player::Look(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
 void AMS_Player::DoLook(float Yaw, float Pitch)
 {
-	if (GetController() != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(Yaw);
-		AddControllerPitchInput(Pitch);
-	}
+	if (!GetController()) return;
+	
+	const float CameraSensitivity = bWantsADS ? ADSLookSensitivity : NormalLookSensitivity;
+	
+	AddControllerYawInput(Yaw * CameraSensitivity);
+	AddControllerPitchInput(Pitch * CameraSensitivity);
 }
 
 void AMS_Player::DoJumpStart()
