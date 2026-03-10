@@ -64,7 +64,7 @@ void ALeech::Tick(float DeltaTime)
 	
 	// 랜덤 스트림 설정 후 궤도값 랜덤으로 변하게끔 설정
 	FRandomStream RandomStream;
-	RandomStream.Initialize(time(NULL));
+	RandomStream.Initialize(time(NULL) + OrbitIndex);
 	OrbitRadius = FMath::Clamp(OrbitRadius + RandomStream.FRandRange(-5, 5), 100.f, 250.f);
 	
 	// 설정한 궤도 각도에 공전 각도(각속도 * DeltaTime)를 더해 새로운 궤도 각도를 설정하고 싶다
