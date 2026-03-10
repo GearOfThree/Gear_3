@@ -67,7 +67,6 @@ AMS_Player::AMS_Player()
 	
 	CombatDialogueComponent = CreateDefaultSubobject<UCombatDialogueComponent>(TEXT("CombatDialogue"));
 
-
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
@@ -191,11 +190,6 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Roll (실패)
-		// EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMS_Player::DiveRoll);
-		// Jump (실패)
-		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMS_Player::OnJumpCompleted);
-
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMS_Player::Move);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AMS_Player::Look);

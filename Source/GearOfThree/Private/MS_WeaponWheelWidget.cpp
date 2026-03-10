@@ -10,12 +10,6 @@ void UMS_WeaponWheelWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
-	// // // 슬롯 클릭 이벤트 바인딩
-	// if (Slot_Left)  Slot_Left->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
-	// if (Slot_Right) Slot_Right->OnSlotClicked.AddDynamic(this, &UMS_WeaponWheelWidget::HandleSlotClicked);
-	
-	// RefreshSlots();
-	
 	UE_LOG(LogTemp, Warning, TEXT("Slots: L=%s R=%s"),
 	*GetNameSafe(Slot_Left), *GetNameSafe(Slot_Right));
 }
