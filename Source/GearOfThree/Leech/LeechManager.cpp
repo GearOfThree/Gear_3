@@ -27,13 +27,22 @@ void ALeechManager::BeginPlay()
 	// 초기 방향 설정
 	ChangeDirection();
 	
-	// 타이머 설정
+	// 방향 전환 타이머 설정
 	GetWorldTimerManager().SetTimer(
 	   TimerHandle_ChangeDir,
 	   this,
 	   &ALeechManager::ChangeDirection,
 	   2.0f,
 	   true
+   );
+	
+	// 감염 타이머 설정
+	GetWorldTimerManager().SetTimer(
+	   TimerHandle_Infect,
+	   this,
+	   &ALeechManager::InfectionDirection,
+	   90.0f,
+	   false
    );
 }
 
@@ -142,4 +151,18 @@ void ALeechManager::ChangeDirection()
 	// 이동 불가능 상황이면
 	// 방향은 그대로 영벡터, 다음 호출 시 이동 가능하도록 설정
 	Moveable = true;
+}
+
+void ALeechManager::InfectionDirection()
+{
+	TArray<AActor*> NPC;
+	UGameplayStatics::GetAllActorsOfClass(this, AGearCharacter::StaticClass(), NPC);
+	
+	for (AActor* Actor : NPC)
+	{
+		AGearCharacter* targetNPC = Cast<AGearCharacter>(Actor);
+		if (!targetNPC) continue;
+		if (!targetNPC->IsAlive()) continue;
+		targetNPC->TeamSide;
+	}
 }

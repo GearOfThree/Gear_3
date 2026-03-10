@@ -37,8 +37,13 @@ public:
 	UPROPERTY(EditAnywhere, Category="Manager|Move")
 	bool Moveable = true;
 	// 매니저 이동 함수 및 함수 재생 타이머
-	FTimerHandle TimerHandle_ChangeDir;
 	void ChangeDirection();
+	FTimerHandle TimerHandle_ChangeDir;
+	
+	// 매니저 감염 함수 및 함수 재생 타이머
+	void InfectionDirection();
+	FTimerHandle TimerHandle_Infect;
+	
 	
 	// 리치 스폰 공장
 	UPROPERTY(EditAnywhere, Category="Leech|Spawn")
