@@ -177,7 +177,6 @@ void AMS_Player::Tick(float DeltaTime)
 	DecaySustainTick(DeltaTime);
 	ApplyCameraRecoilTick(DeltaTime);
 	ApplyWeaponKickTick(DeltaTime);
-	PlayPendingShake();
 }
 
 
@@ -758,22 +757,4 @@ void AMS_Player::ApplyWeaponKickTick(float DeltaTime)
 	// 베이스 + 킥 적용
 	WeaponMeshComp->SetRelativeLocation(WeaponBaseLoc + WeaponKickCurrentLoc);
 	WeaponMeshComp->SetRelativeRotation((WeaponBaseRot + WeaponKickCurrentRot).Quaternion());
-}
-
-void AMS_Player::PlayPendingShake()
-{
-	if (!FireShakeClass)
-		return;
-
-	AMS_PlayerController* PC = Cast<AMS_PlayerController>(GetController());
-	if (!PC)
-	{
-		FireShakeClass = nullptr;
-		return;
-	}
-
-	PC->ClientStartCameraShake(FireShakeClass, PendingShakeScale);
-
-	// 1회만 실행
-	FireShakeClass = nullptr;
 }
