@@ -233,5 +233,5 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
     
     FVector Nudge = Normal * 1.0f;
     SetActorLocation(GetActorLocation() + Nudge);
-    DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
+    //DrawDebugLine(GetWorld(), Hit.Location, Hit.Location + ReflectedVelocity, FColor::Red, false, 1.0f, 0, 2.0f);
 }

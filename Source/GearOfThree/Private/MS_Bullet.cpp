@@ -6,6 +6,7 @@
 #include "GearCharacter.h"
 #include "MS_Damageable.h"
 #include "MS_DamageableCharacter.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -120,13 +121,11 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	
 	if (ImpactFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			ImpactFX,
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(), ImpactFX,
 			Hit.ImpactPoint,
-			Hit.ImpactNormal.Rotation(),
-			true // AutoDestroy
-		);
+			Hit.ImpactNormal.Rotation());
+
 		// 총알 제거 
 		Destroy();
 	}
