@@ -24,6 +24,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* PB_HP;
 
-	UPROPERTY(meta = (BindWidgetOptional))
-	UTextBlock* Txt_HP;
+	// UPROPERTY(meta = (BindWidgetOptional))
+	// UTextBlock* Txt_HP;
 };

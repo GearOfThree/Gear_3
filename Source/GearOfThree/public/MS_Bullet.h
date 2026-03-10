@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "MS_Bullet.generated.h"
 
+class UNiagaraSystem;
+
 UCLASS()
 class GEAROFTHREE_API AMS_Bullet : public AActor
 {
@@ -38,7 +40,7 @@ public:
 	class UStaticMeshComponent* BulletMesh;
 	
 	UPROPERTY(EditDefaultsOnly, Category="FX|Cascade")
-	TObjectPtr<UParticleSystem> ImpactFX;
+	TObjectPtr<UNiagaraSystem> ImpactFX;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Sound")
 	TObjectPtr<USoundBase> BulletSound = nullptr;

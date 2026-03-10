@@ -6,6 +6,7 @@
 #include "GearCharacter.h"
 #include "MS_Damageable.h"
 #include "MS_DamageableCharacter.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -87,7 +88,7 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	*Hit.ImpactPoint.ToString(),
 	*Hit.ImpactNormal.ToString());
 
-	DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 20.f, 12, FColor::Red, false, 2.f);
+	// DrawDebugSphere(GetWorld(), Hit.ImpactPoint, 20.f, 12, FColor::Red, false, 2.f);
 	
 	// 총알이 총알 자체와 부딪혔는지 확인한다.
 	if (!OtherActor || OtherActor == this) return;
@@ -104,15 +105,15 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 		// 3 : AActor* DamageCauser
 		IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
 		
-		DrawDebugString(
-			GetWorld(),
-			GetActorLocation() + FVector(0,0,100),
-			TEXT(""),
-			nullptr,
-			FColor::White,
-			2.0f,
-			true
-		);	
+		// DrawDebugString(
+		// 	GetWorld(),
+		// 	GetActorLocation() + FVector(0,0,100),
+		// 	TEXT(""),
+		// 	nullptr,
+		// 	FColor::White,
+		// 	2.0f,
+		// 	true
+		// );	
 	}
 	
 	// 사운드 
@@ -120,13 +121,11 @@ void AMS_Bullet::OnBulletHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	
 	if (ImpactFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(
-			GetWorld(),
-			ImpactFX,
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(), ImpactFX,
 			Hit.ImpactPoint,
-			Hit.ImpactNormal.Rotation(),
-			true // AutoDestroy
-		);
+			Hit.ImpactNormal.Rotation());
+
 		// 총알 제거 
 		Destroy();
 	}

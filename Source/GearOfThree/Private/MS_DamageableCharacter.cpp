@@ -34,15 +34,15 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 	
 	HPComponent->ApplyDamage(Damage);
 	
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			2.0f,
-			FColor::Green,
-			FString::Printf(TEXT("Current HP: %.1f Damage: %.0f"), HPComponent->CurrentHP, Damage)
-		);
-	}
+	// if (GEngine)
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(
+	// 		-1,
+	// 		2.0f,
+	// 		FColor::Green,
+	// 		FString::Printf(TEXT("Current HP: %.1f Damage: %.0f"), HPComponent->CurrentHP, Damage)
+	// 	);
+	// }
 	
 	
 	// 현재 체력이 90이 되었어(리치 분기점) 
