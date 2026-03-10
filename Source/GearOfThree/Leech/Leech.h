@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 
+#include "Particles/ParticleSystem.h"
 #include "GameplayTagContainer.h"
 #include "Components/StateTreeComponent.h"
 #include "MS_DamageableCharacter.h"
@@ -85,6 +86,30 @@ public:
 		UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse,
 		const FHitResult& Hit);
+	
+	// 죽을 때 피 분수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	UParticleSystem* DeathAcidEffect = nullptr;
+	// 죽을 때 폭발
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VFX")
+	UParticleSystem* DeathBombEffect = nullptr;
+	
+	UPROPERTY()
+	bool bDying = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Death")
+	float DeathDelay = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Death")
+	float DeathScaleMultiplier = 1.55f;
+
+	FVector DeathStartScale;
+	FVector DeathTargetScale;
+
+	FTimerHandle DeathGrowTimerHandle;
+	FTimerHandle DeathFinalTimerHandle;
+	
+	void Die();
 	
 private:
 	float OrbitAngleDeg = 0.f;

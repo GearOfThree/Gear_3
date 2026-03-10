@@ -2,6 +2,7 @@
 
 
 #include "Leech/Leech.h"
+#include "TimerManager.h"
 #include "GearOfThreeTypes.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Math/RandomStream.h"
@@ -131,4 +132,83 @@ void ALeech::OnRushHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 		UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Non-Player: %s"), *OtherActor->GetName());
 		bRushHitPlayer = false;
 	}
+}
+
+void ALeech::Die()
+{
+	if (bDying)
+	{
+		return;
+	}
+	bDying = true;
+
+	DeathStartScale = GetActorScale3D();
+	DeathTargetScale = DeathStartScale * DeathScaleMultiplier;
+
+	// 첫 번째 이펙트
+	if (DeathAcidEffect)
+	{
+		const FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 30.f);
+
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			DeathAcidEffect,
+			SpawnLoc,
+			GetActorRotation(),
+			true
+		);
+	}
+
+	// 커지는 연출용 반복 타이머
+	GetWorldTimerManager().SetTimer(
+		DeathGrowTimerHandle,
+		[this]()
+		{
+			if (!IsValid(this))
+			{
+				return;
+			}
+
+			const float CurrentTime =
+				GetWorldTimerManager().GetTimerElapsed(DeathFinalTimerHandle);
+
+			const float Alpha = FMath::Clamp(CurrentTime / DeathDelay, 0.f, 1.f);
+
+			const FVector NewScale = FMath::Lerp(DeathStartScale, DeathTargetScale, Alpha);
+			SetActorScale3D(NewScale);
+		},
+		0.02f,
+		true
+	);
+
+	// 마지막 폭발 + 파괴
+	GetWorldTimerManager().SetTimer(
+		DeathFinalTimerHandle,
+		[this]()
+		{
+			// 마지막 순간 목표 크기로 확정
+			SetActorScale3D(DeathTargetScale);
+
+			// 반복 타이머 정지
+			GetWorldTimerManager().ClearTimer(DeathGrowTimerHandle);
+
+			// 두 번째 이펙트
+			if (DeathBombEffect)
+			{
+				const FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 30.f);
+
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					DeathBombEffect,
+					SpawnLoc,
+					GetActorRotation(),
+					true
+				);
+			}
+
+			Destroy();
+		},
+		DeathDelay,
+		false
+	);
 }

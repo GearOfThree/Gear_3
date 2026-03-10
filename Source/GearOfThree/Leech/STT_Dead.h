@@ -14,10 +14,6 @@ class GEAROFTHREE_API USTT_Dead : public UStateTreeTaskBlueprintBase
 public:
 	USTT_Dead(const FObjectInitializer& ObjectInitializer);
 
-	// 몇 초 후 파괴할지 (0이면 즉시)
-	UPROPERTY(EditAnywhere, Category="Dead")
-	float DestroyDelay = 1.0f;
-
 protected:
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) override;
 	//virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, float DeltaTime) override;
@@ -26,4 +22,5 @@ protected:
 private:
 	float Elapsed = 0.f;
 	bool bDestroyRequested = false;
+	
 };

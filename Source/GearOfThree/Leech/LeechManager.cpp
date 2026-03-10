@@ -46,7 +46,7 @@ void ALeechManager::BeginPlay()
 	   TimerHandle_Infect,
 	   this,
 	   &ALeechManager::InfectionDirection,
-	   5.0f,
+	   60.0f,
 	   false
    );
 }

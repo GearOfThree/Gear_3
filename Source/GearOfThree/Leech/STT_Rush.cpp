@@ -130,6 +130,18 @@ EStateTreeRunStatus USTT_Rush::Tick(
 			if (HitActor == PlayerPawn)
 			{
 				IMS_Damageable::Execute_ReceiveDamage(PlayerPawn, 50.f, Leech);
+				if (Leech->DeathBombEffect)
+				{
+					const FVector SpawnLoc = Leech->GetActorLocation() + FVector(0.f, 0.f, 30.f);
+
+					UGameplayStatics::SpawnEmitterAtLocation(
+						GetWorld(),
+						Leech->DeathBombEffect,
+						SpawnLoc,
+						Leech->GetActorRotation(),
+						true
+					);
+				}
 				Leech->Destroy();
 			}
 		}

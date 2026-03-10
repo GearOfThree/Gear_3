@@ -6,6 +6,7 @@
 #include "Leech.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ALeechProjectile::ALeechProjectile()
@@ -64,6 +65,7 @@ void ALeechProjectile::Tick(float DeltaTime)
 	
 	Velocity.Z = Velocity.Z + Gravity * DeltaTime;
 	SetActorLocation(GetActorLocation() + Velocity * DeltaTime);
+	SetActorRotation(UKismetMathLibrary::MakeRotFromXZ(Velocity, GetActorUpVector()));
 }
 
 void ALeechProjectile::NotifyActorBeginOverlap(AActor* OtherActor)
