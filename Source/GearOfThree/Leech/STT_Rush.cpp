@@ -144,6 +144,12 @@ EStateTreeRunStatus USTT_Rush::Tick(
 						true
 					);
 				}
+				
+				if (Leech->DeathSound && Leech->ExplosionSound)
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, Leech->DeathSound, Leech->GetActorLocation());
+					UGameplayStatics::PlaySoundAtLocation(this, Leech->ExplosionSound, Leech->GetActorLocation());
+				}
 				Leech->Destroy();
 			}
 		}

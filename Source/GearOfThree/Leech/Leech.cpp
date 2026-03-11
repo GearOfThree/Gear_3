@@ -158,6 +158,12 @@ void ALeech::Die()
 			true
 		);
 	}
+	
+	if (DeathSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
+	}
+
 
 	// 커지는 연출용 반복 타이머
 	GetWorldTimerManager().SetTimer(
@@ -205,7 +211,12 @@ void ALeech::Die()
 					true
 				);
 			}
-
+			
+			if (ExplosionSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, ExplosionSound, GetActorLocation());
+				
+			}
 			Destroy();
 		},
 		DeathDelay,
