@@ -40,4 +40,6 @@ public:
 	bool bBroadcasted = false;
 	
 	virtual void ReceiveDamage_Implementation(float Damage, AActor* DamageCauser) override;
+	
+	bool GetIsDead() const;
 };

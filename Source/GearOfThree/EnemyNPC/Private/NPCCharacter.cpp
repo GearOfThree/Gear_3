@@ -6,8 +6,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StateTreeComponent.h"
 #include "Engine/OverlapResult.h"
-#include "Kismet/GameplayStatics.h"
 
+#define ECC_Leech ECC_GameTraceChannel1
 ANPCCharacter::ANPCCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -35,12 +35,12 @@ AActor* ANPCCharacter::FindClosestEnemy()
 	// NPC들이 속한 콜리전 채널을 지정 (보통 캐릭터는 Pawn 채널을 씁니다)
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Leech); // 필요하다면 다른 채널도 추가
 	// 나 자신은 처음부터 검색에서 제외시켜 버립니다!
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this); 
 
-	// 맵 전체가 아니라, 내 주변 50미터 반경 안의 액터만 긁어옵니다
+	// 맵 전체가 아니라, 내 주변 100미터 반경 안의 액터만 긁어옵니다
 	bool bHit = GetWorld()->OverlapMultiByObjectType(
 		OverlapResults,
 		MyLocation,
@@ -54,10 +54,11 @@ AActor* ANPCCharacter::FindClosestEnemy()
 	{
 		for (const FOverlapResult& Result : OverlapResults)
 		{
-			ANPCCharacter* TargetNPC = Cast<ANPCCharacter>(Result.GetActor());
+			AMS_DamageableCharacter* TargetNPC = Cast<AMS_DamageableCharacter>(Result.GetActor());
+			//UE_LOG(LogTemp, Error, TEXT("Overlap Result: %s"), *GetNameSafe(TargetNPC));
 
 			// 유효성 검사 및 죽은 적 무시
-			if (!TargetNPC || TargetNPC->bIsDead) continue; 
+			if (!TargetNPC || TargetNPC->GetIsDead()) continue; 
 
 			// 적군인지 확인
 			if (this->IsHostile(TargetNPC)) 
