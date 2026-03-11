@@ -124,12 +124,12 @@ void ALeech::OnRushHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 
 	if (OtherActor == PlayerPawn)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Player"));
+		//UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Player"));
 		bRushHitPlayer = true;
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Non-Player: %s"), *OtherActor->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("[Leech Rush Hit] Hit Non-Player: %s"), *OtherActor->GetName());
 		bRushHitPlayer = false;
 	}
 }
@@ -148,7 +148,7 @@ void ALeech::Die()
 	// 첫 번째 이펙트
 	if (DeathAcidEffect)
 	{
-		const FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 30.f);
+		const FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 15.f);
 
 		UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
@@ -195,7 +195,7 @@ void ALeech::Die()
 			// 두 번째 이펙트
 			if (DeathBombEffect)
 			{
-				const FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 30.f);
+				const FVector SpawnLoc = GetActorLocation() + FVector(0.f, 0.f, 15.f);
 
 				UGameplayStatics::SpawnEmitterAtLocation(
 					GetWorld(),

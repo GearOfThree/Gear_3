@@ -63,7 +63,7 @@ EStateTreeRunStatus USTT_Rush::EnterState(
 
 	bStartedRush = true;
 
-	UE_LOG(LogTemp, Warning, TEXT("[Rush Enter] RushVelocity=%s"), *RushVelocity.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("[Rush Enter] RushVelocity=%s"), *RushVelocity.ToString());
 
 	return EStateTreeRunStatus::Running;
 }
@@ -91,8 +91,10 @@ EStateTreeRunStatus USTT_Rush::Tick(
 	
 	if (Leech->bRushShouldEnd)
 	{
+		/*
 		UE_LOG(LogTemp, Warning, TEXT("[Rush Tick] RushShouldEnd=true | HitPlayer=%s"),
 			Leech->bRushHitPlayer ? TEXT("true") : TEXT("false"));
+		*/
 
 		Leech->bIsRush = false;
 		Leech->bRushShouldEnd = false;

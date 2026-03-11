@@ -23,11 +23,11 @@ EStateTreeRunStatus USTT_Fall::EnterState(FStateTreeExecutionContext& Context, c
 	if (ALeech* Leech = Cast<ALeech>(Context.GetOwner()))
 	{
 		Leech->bOrbiting = false;
-		UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Enter -> bOrbiting=false (%s)"), *Leech->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Enter -> bOrbiting=false (%s)"), *Leech->GetName());
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Enter (Owner=%s)"), *GetNameSafe(Context.GetOwner()));
+		//UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Enter (Owner=%s)"), *GetNameSafe(Context.GetOwner()));
 	}
 	
 	FallVelocity = 0.f;
@@ -81,7 +81,7 @@ EStateTreeRunStatus USTT_Fall::Tick(FStateTreeExecutionContext& Context, float D
 			STC->SendStateTreeEvent(LandedTag);
 		}
 		
-		UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Succeeded (Landed)"));
+		//UE_LOG(LogTemp, Warning, TEXT("[ST] STT_Fall Succeeded (Landed)"));
 		return EStateTreeRunStatus::Running;
 	}
 

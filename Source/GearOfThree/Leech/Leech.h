@@ -22,6 +22,7 @@ public:
 	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	
 	UFUNCTION()
 	void OrbitToFall();
 	UFUNCTION()
@@ -33,7 +34,7 @@ public:
 	// ST 슬롯 생성
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AI|StateTree")
 	TObjectPtr<UStateTree> StateTreeSlot;
-	
+	// 낙하 상태 전환용 태그
 	UPROPERTY(EditDefaultsOnly, Category="AI|StateTree")
 	FGameplayTag OrbitToFallEventTag;
 
@@ -79,6 +80,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Leech|Rush")
 	bool bRushHitPlayer = false;
 	
+	// 돌진 상태에서 플레이어 충돌 시 함수
 	UFUNCTION()
 	void OnRushHit(
 		UPrimitiveComponent* HitComp,
@@ -109,6 +111,7 @@ public:
 	FTimerHandle DeathGrowTimerHandle;
 	FTimerHandle DeathFinalTimerHandle;
 	
+	UFUNCTION()
 	void Die();
 	
 private:
