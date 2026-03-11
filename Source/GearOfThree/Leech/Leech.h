@@ -111,6 +111,11 @@ public:
 	FTimerHandle DeathGrowTimerHandle;
 	FTimerHandle DeathFinalTimerHandle;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	class USoundBase* DeathSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Audio")
+	class USoundBase* ExplosionSound;
+	
 	UFUNCTION()
 	void Die();
 	
