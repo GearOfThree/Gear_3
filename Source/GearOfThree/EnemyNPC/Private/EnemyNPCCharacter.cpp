@@ -67,8 +67,8 @@ void AEnemyNPCCharacter::BeginPlay()
 	
 	if (WeaponComponent && StartingWeaponClass)
 	{
-		WeaponComponent->SetFireRate(0.4f);
-		WeaponComponent->SetAmmo(10);
+		WeaponComponent->SetFireRate(0.3f);
+		WeaponComponent->SetAmmo(5);
 		WeaponComponent->EquipWeapon(StartingWeaponClass, FName("weapon_socket"));
 	}
 }
