@@ -61,12 +61,12 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 		
 		HPComponent->OnDead.Broadcast();
 		
-		GEngine->AddOnScreenDebugMessage(
-			-1,  // 각 객체마다 고유 Key
-			2.0f,
-			FColor::Green,
-			FString::Printf(TEXT("Target Dead"))
-		);
+		// GEngine->AddOnScreenDebugMessage(
+		// 	-1,  // 각 객체마다 고유 Key
+		// 	2.0f,
+		// 	FColor::Green,
+		// 	FString::Printf(TEXT("Target Dead"))
+		// );
 		
 		if (ANPCCharacter* NPC = Cast<ANPCCharacter>(this))
 		{

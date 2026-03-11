@@ -67,7 +67,6 @@ AMS_Player::AMS_Player()
 	
 	CombatDialogueComponent = CreateDefaultSubobject<UCombatDialogueComponent>(TEXT("CombatDialogue"));
 
-
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
@@ -178,7 +177,6 @@ void AMS_Player::Tick(float DeltaTime)
 	DecaySustainTick(DeltaTime);
 	ApplyCameraRecoilTick(DeltaTime);
 	ApplyWeaponKickTick(DeltaTime);
-	PlayPendingShake();
 }
 
 
@@ -191,11 +189,6 @@ void AMS_Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
-		// Roll (실패)
-		// EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMS_Player::DiveRoll);
-		// Jump (실패)
-		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AMS_Player::OnJumpCompleted);
-
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMS_Player::Move);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AMS_Player::Look);
@@ -764,22 +757,4 @@ void AMS_Player::ApplyWeaponKickTick(float DeltaTime)
 	// 베이스 + 킥 적용
 	WeaponMeshComp->SetRelativeLocation(WeaponBaseLoc + WeaponKickCurrentLoc);
 	WeaponMeshComp->SetRelativeRotation((WeaponBaseRot + WeaponKickCurrentRot).Quaternion());
-}
-
-void AMS_Player::PlayPendingShake()
-{
-	if (!FireShakeClass)
-		return;
-
-	AMS_PlayerController* PC = Cast<AMS_PlayerController>(GetController());
-	if (!PC)
-	{
-		FireShakeClass = nullptr;
-		return;
-	}
-
-	PC->ClientStartCameraShake(FireShakeClass, PendingShakeScale);
-
-	// 1회만 실행
-	FireShakeClass = nullptr;
 }
