@@ -3,6 +3,7 @@
 
 #include "Leech/LeechManager.h"
 
+#include "AllyNPCCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -114,9 +115,9 @@ void ALeechManager::Tick(float DeltaTime)
 void ALeechManager::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
-	if (auto* target = Cast<AGearCharacter>(OtherActor))
+	if (auto* target = Cast<AAllyNPCCharacter>(OtherActor))
 	{
-		target->ChangeTeamSide(ETeamSide::Enemy);
+		target->SetTeamSide(true);
 	}
 }
 

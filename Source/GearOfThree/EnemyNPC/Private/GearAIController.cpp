@@ -18,8 +18,8 @@ void AGearAIController::FindCoverLocation(UEnvQuery* InCoverQuery)
 				FVector BestLocation = Result->GetItemAsLocation(0);
 				UE_LOG(LogTemp, Warning, TEXT("✅ [STEP 4] EQS Found Cover! Moving to: %s"), *BestLocation.ToString());
 			 	// BestLocation 지점에 높이 100, 반지름 20인 빨간색 기둥을 5초 동안 그립니다.
-				FVector ColumnTop = BestLocation + FVector(0.f, 0.f, 100.f);
-			 	DrawDebugCylinder(GetWorld(), BestLocation, ColumnTop, 20.f, 12, FColor::Red, false, 5.f);
+				//FVector ColumnTop = BestLocation + FVector(0.f, 0.f, 100.f);
+			 	//DrawDebugCylinder(GetWorld(), BestLocation, ColumnTop, 20.f, 12, FColor::Red, false, 5.f);
 				ValidThis->MoveToLocation(BestLocation);
 			 }
 			 else
