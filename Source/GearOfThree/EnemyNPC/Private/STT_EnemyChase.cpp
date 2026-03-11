@@ -5,7 +5,6 @@
 #include "AIController.h"
 #include "NPCCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Navigation/PathFollowingComponent.h"
 
 EStateTreeRunStatus FSTT_EnemyChase::EnterState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const

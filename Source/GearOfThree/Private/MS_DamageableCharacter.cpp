@@ -81,3 +81,8 @@ void AMS_DamageableCharacter::ReceiveDamage_Implementation(float Damage, AActor*
 	}
 	
 }
+
+bool AMS_DamageableCharacter::GetIsDead() const
+{
+	return HPComponent->IsDead;
+}
