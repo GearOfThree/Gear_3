@@ -46,7 +46,8 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 		FinalTarget = Owner->FindClosestEnemy(); 
 		// 적군이 하나도 없다면? FinalTarget은 nullptr가 됨
 	}
-	
+	UE_LOG(LogTemp, Error, TEXT("Final Target: %s"), *GetNameSafe(FinalTarget));
+
 	//Evaluator 자체 출력 데이터 업데이트 (State Tree 내부 바인딩용)
 	InstanceData.SelectedTarget = FinalTarget;
 
