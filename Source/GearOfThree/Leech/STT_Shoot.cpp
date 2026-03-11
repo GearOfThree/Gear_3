@@ -39,7 +39,7 @@ EStateTreeRunStatus USTT_Shoot::EnterState(FStateTreeExecutionContext& Context,
 	// 투사체 클래스 없으면 실패(또는 그냥 Succeeded로 넘겨도 됨)
 	if (!ProjectileFactory)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] ProjectileClass is null"));
+		//UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] ProjectileClass is null"));
 		return EStateTreeRunStatus::Failed;
 	}
 
@@ -53,14 +53,9 @@ EStateTreeRunStatus USTT_Shoot::EnterState(FStateTreeExecutionContext& Context,
 
 	if (!World)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[Shoot] World is null"));
+		//UE_LOG(LogTemp, Warning, TEXT("[Shoot] World is null"));
 		return EStateTreeRunStatus::Failed;
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("[Shoot] World=%s  WorldType=%d  NetMode=%d"),
-		*GetNameSafe(World),
-		(int32)World->WorldType,
-		(int32)World->GetNetMode());
 	
 	// 발사 위치: 리치의 로컬 오프셋을 월드로 변환
 	const FVector SpawnLoc = OwnerActor->GetActorTransform().TransformPosition(MuzzleLocalOffset);
@@ -86,18 +81,14 @@ EStateTreeRunStatus USTT_Shoot::EnterState(FStateTreeExecutionContext& Context,
 	
 	if (!Projectile)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] SpawnActor FAILED. Class=%s"), *GetNameSafe(ProjectileFactory));
+		//UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] SpawnActor FAILED. Class=%s"), *GetNameSafe(ProjectileFactory));
 		return EStateTreeRunStatus::Failed;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] SpawnActor OK: %s  Owner=%s  Instigator=%s"),
-	*GetNameSafe(Projectile),
-	*GetNameSafe(Projectile->GetOwner()),
-	*GetNameSafe(Projectile->GetInstigator()));
-
+	
 	// 쿨타임 갱신: "발사 성공 순간"에 찍어야 함
 	Leech->LastShootTime = World->GetTimeSeconds();
 
-	UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] Fired. LastShootTime=%.2f"), Leech->LastShootTime);
+	//UE_LOG(LogTemp, Warning, TEXT("[STT_Shoot] Fired. LastShootTime=%.2f"), Leech->LastShootTime);
 
 	// 1회 발사 후 바로 상태 종료 → Move로 돌아가게
 	return EStateTreeRunStatus::Succeeded;

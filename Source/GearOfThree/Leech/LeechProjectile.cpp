@@ -27,11 +27,14 @@ ALeechProjectile::ALeechProjectile()
 void ALeechProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	/*
 	UE_LOG(LogTemp, Warning, TEXT("[Projectile] BeginPlay: %s  Owner=%s  Instigator=%s  World=%s"),
 	*GetName(),
 	*GetNameSafe(GetOwner()),
 	*GetNameSafe(GetInstigator()),
 	*GetNameSafe(GetWorld()));
+	*/
 	
 	TArray<AActor*> FoundActors;
 	

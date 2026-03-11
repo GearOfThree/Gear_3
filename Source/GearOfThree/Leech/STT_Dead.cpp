@@ -38,11 +38,11 @@ EStateTreeRunStatus USTT_Dead::EnterState(FStateTreeExecutionContext& Context, c
 	{
 		bDestroyRequested = true;
 
-		UE_LOG(LogTemp, Warning, TEXT("[STT_Dead] QUEUE DESTROY %s"), *GetNameSafe(OwnerActor));
+		//UE_LOG(LogTemp, Warning, TEXT("[STT_Dead] QUEUE DESTROY %s"), *GetNameSafe(OwnerActor));
 
 		Leech->Die();
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[STT_Dead] EnterState %s"), *GetNameSafe(OwnerActor));
+	//UE_LOG(LogTemp, Warning, TEXT("[STT_Dead] EnterState %s"), *GetNameSafe(OwnerActor));
 	return EStateTreeRunStatus::Running;
 }

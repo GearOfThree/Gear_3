@@ -129,7 +129,7 @@ void ALeechManager::SpawnLeeches()
 	if (!LeechFactory)
 	{
 		// 로그 띄우기, 이후 내용 실행 X
-		UE_LOG(LogTemp, Warning, TEXT("ALeechManager: LeechClass is not set."));
+		//UE_LOG(LogTemp, Warning, TEXT("ALeechManager: LeechClass is not set."));
 		return;
 	}
 
