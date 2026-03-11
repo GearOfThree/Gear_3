@@ -184,15 +184,15 @@ void ABuzzKillProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
                 // 1: 함수를 실행할 대상 객체, 2: 데미지 수치(Power), 3: 가해자(this)
                 IMS_Damageable::Execute_ReceiveDamage(OtherActor, Power, this);
                 
-                DrawDebugString(
-                   GetWorld(),
-                   GetActorLocation() + FVector(0,0,100),
-                   TEXT("Sion Damage Applied!"), // 빈칸이었던 부분에 확인용 텍스트 임시 추가
-                   nullptr,
-                   FColor::White,
-                   2.0f,
-                   true
-                ); 
+                // DrawDebugString(
+                //    GetWorld(),
+                //    GetActorLocation() + FVector(0,0,100),
+                //    TEXT("Sion Damage Applied!"), // 빈칸이었던 부분에 확인용 텍스트 임시 추가
+                //    nullptr,
+                //    FColor::White,
+                //    2.0f,
+                //    true
+                // ); 
             }
         }
         // =====================================================================
