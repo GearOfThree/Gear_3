@@ -35,4 +35,15 @@ protected:
 	USkeletalMeshComponent* AllyMesh;
 	
 	void Fire();
+	
+protected:
+	// 🚩 기존 단일 포인터에서 배열(TArray)로 변경
+	// 모든 머티리얼 슬롯의 다이내믹 인스턴스를 저장합니다.
+	UPROPERTY()
+	TArray<class UMaterialInstanceDynamic*> DynamicMaterials;
+
+public:
+	// 팀을 변경하고 외형을 업데이트하는 함수
+	UFUNCTION(BlueprintCallable, Category = "Teams")
+	void SetTeamSide(bool bIsEnemy);
 };
