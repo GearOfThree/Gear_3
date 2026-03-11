@@ -44,22 +44,7 @@ void FSTE_TargetSelector::Tick(FStateTreeExecutionContext& Context, const float 
 	{
 		// 아군 로직
 		FinalTarget = Owner->FindClosestEnemy(); 
-        
 		// 적군이 하나도 없다면? FinalTarget은 nullptr가 됨
-		
-		// 디버그 로그 추가
-		if (FinalTarget)
-		{
-			// 적을 찾았을 때: 빨간색 로그
-			GEngine->AddOnScreenDebugMessage(10, 0.0f, FColor::Red, 
-				FString::Printf(TEXT("Found Enemy: %s"), *FinalTarget->GetName()));
-		}
-		else
-		{
-			// 적을 못 찾았을 때: 노란색 로그
-			GEngine->AddOnScreenDebugMessage(10, 0.0f, FColor::Yellow, 
-				TEXT("No Enemy Found... Looking at Player"));
-		}
 	}
 	
 	//Evaluator 자체 출력 데이터 업데이트 (State Tree 내부 바인딩용)
