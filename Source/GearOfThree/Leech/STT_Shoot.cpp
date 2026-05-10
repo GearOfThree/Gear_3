@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "StateTreeExecutionContext.h"
 #include "Leech/Leech.h"
+#include "AIDebugComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
@@ -34,6 +35,11 @@ EStateTreeRunStatus USTT_Shoot::EnterState(FStateTreeExecutionContext& Context,
 	if (!Leech || !OwnerActor->GetWorld())
 	{
 		return EStateTreeRunStatus::Failed;
+	}
+
+	if (Leech->DebugComp)
+	{
+		Leech->DebugComp->SetCurrentState(TEXT("Shoot"), TEXT("Firing Projectile"));
 	}
 
 	// 투사체 클래스 없으면 실패(또는 그냥 Succeeded로 넘겨도 됨)

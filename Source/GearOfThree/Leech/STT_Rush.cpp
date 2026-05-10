@@ -4,6 +4,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Leech.h"
+#include "AIDebugComponent.h"
 #include "StateTreeExecutionContext.h"
 
 USTT_Rush::USTT_Rush(const FObjectInitializer& ObjectInitializer)
@@ -55,6 +56,11 @@ EStateTreeRunStatus USTT_Rush::EnterState(
 	Leech->bRushShouldEnd = false;
 	Leech->bRushHitPlayer = false;
 	
+	if (Leech->DebugComp)
+	{
+		Leech->DebugComp->SetCurrentState(TEXT("Rush"), TEXT("Player Targeted"));
+	}
+
 	Leech->SetActorRotation(Dir.Rotation());
 
 	// 초기 속도 = 수평 방향 속도 + 위쪽 속도

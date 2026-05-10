@@ -30,4 +30,7 @@ public:
 	bool IsHostile(AGearCharacter* OtherCharacter) const;
 	
 	void ChangeTeamSide(ETeamSide team);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI Debug")
+	class UAIDebugComponent* DebugComp;
 };

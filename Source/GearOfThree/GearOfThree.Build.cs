@@ -41,7 +41,8 @@ public class GearOfThree : ModuleRules
 			"GearOfThree/Variant_SideScrolling/Gameplay",
 			"GearOfThree/Variant_SideScrolling/Interfaces",
 			"GearOfThree/Variant_SideScrolling/UI",
-			"GearOfThree/EnemyNPC/Public"
+			"GearOfThree/EnemyNPC/Public",
+			"GearOfThree/public"
 		});
 
 		// Uncomment if you are using Slate UI

@@ -30,6 +30,7 @@ public:
 	// ST 컴포넌트 생성
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI|StateTree", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UStateTreeComponent> StateTreeComp;
+
 	// ST 슬롯 생성
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AI|StateTree")
 	TObjectPtr<UStateTree> StateTreeSlot;

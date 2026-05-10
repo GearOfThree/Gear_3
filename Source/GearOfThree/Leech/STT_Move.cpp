@@ -3,6 +3,8 @@
 
 #include "Leech/STT_Move.h"
 
+#include <AIDebugComponent.h>
+
 #include "StateTreeExecutionContext.h"
 #include "Leech/Leech.h"
 #include "Kismet/GameplayStatics.h"
@@ -29,6 +31,10 @@ EStateTreeRunStatus USTT_Move::EnterState(FStateTreeExecutionContext& Context, c
 		if (ALeech* Leech = Cast<ALeech>(OwnerActor))
 		{
 			Leech->bOrbiting = false;
+			if (Leech->DebugComp)
+			{
+				Leech->DebugComp->SetCurrentState(TEXT("Move"), TEXT("Entering Move State"));
+			}
 		}
 	}
 

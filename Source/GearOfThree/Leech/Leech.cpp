@@ -17,6 +17,7 @@ ALeech::ALeech()
 	
 	// ST 컴포넌트 만들어서 붙이기
 	StateTreeComp = CreateDefaultSubobject<UStateTreeComponent>(TEXT("StateTreeComp"));
+	
 	// 팀 사이드를 적으로 설정
 	TeamSide = ETeamSide::Enemy;
 }

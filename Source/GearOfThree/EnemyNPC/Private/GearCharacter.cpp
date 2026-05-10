@@ -3,6 +3,7 @@
 
 #include "GearCharacter.h"
 #include "GearOfThreeTypes.h"
+#include "AIDebugComponent.h"
 
 
 // Sets default values
@@ -13,6 +14,8 @@ AGearCharacter::AGearCharacter()
 	
 	// 기본 팀은 없음(None)으로 설정
 	TeamSide = ETeamSide::None;
+
+	DebugComp = CreateDefaultSubobject<UAIDebugComponent>(TEXT("AIDebugComp"));
 }
 
 bool AGearCharacter::IsHostile(AGearCharacter* OtherCharacter) const
